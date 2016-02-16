@@ -5,7 +5,7 @@ library(rgdal)
 
 source("C:\\GoogleDrive\\Climate\\Rcode\\my.image.plot.r")
 source("C:\\GoogleDrive\\Climate\\Rcode\\my.filled.contour.r")
-OutputGraphics<-"C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics"
+OutputGraphics<-"C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics2"
 latName <- c("latitude",rep("lat",times=8))
 lonName <- c("longitude",rep("lon",times=8))
 years <- 1950:1999
@@ -98,12 +98,16 @@ combineMapLst[[m]]<-combineMap+NAmask
 
 
 for(m in 1:12){
-    Colors   = c(colorRampPalette(c("navy", "grey92"))(50),rev(colorRampPalette(c("red4","grey92"))(50)))
+    Colors<-c(colorRampPalette(c("blue","grey92")(50),rev(colorRampPalette(c("red4","grey92"))(50)))
+
+    #I think this ramp looks like a clown but what do I know...
+    #Colors   = c(colorRampPalette(c("darkorchid1","blue","green4","green","palegreen", "grey95"))(50),
+    #rev(colorRampPalette(c("red4","red","orange","yellow","lemonchiffon","grey95"))(50)))
     jet.colors <- colorRampPalette(Colors)
 #===================================
 #Ratio Here
 #===================================
-    png(file.path(OutputGraphics,paste(Vars[v],month.abb[m],"VicRatio.png",sep="")),width=1000,
+    png(file.path(OutputGraphics,paste(Vars[v],month.abb[m],"VicLogRatio.png",sep="")),width=1000,
                       height=700)
     MonthlyDiff<-log((ImgLst[[1]][[m]]+2)/(combineMapLst[[m]]+2)) #I'm adding the 1 to avoid division by zero as well as
     #Sgn<-sign(MonthlyDiff)
@@ -125,7 +129,69 @@ for(m in 1:12){
            par(oma=c( 0,1,0,0))
              my.image.plot(MonthlyDiff,legend.only=TRUE,col=jet.colors(length(Breaks)-1),breaks=Breaks,zlim=c(-r,r),cex.axis=1.5)
     dev.off()
+    
+#===================================
+#log ratio plotted but transform on the legend bar
+#===================================
+    png(file.path(OutputGraphics,paste(Vars[v],month.abb[m],"VicRatioScale.png",sep="")),width=1000,
+                      height=700)
+    MonthlyDiff<-(ImgLst[[1]][[m]]+2)/(combineMapLst[[m]]+2) #I'm adding the 1 to avoid division by zero as well as
+    #Sgn<-sign(MonthlyDiff)
+    #MonthlyDiff<-Sgn*exp(abs(MonthlyDiff))
+    #small values leading to large differences
+       # breakRng<-range(MonthlyDiff,na.rm=TRUE)
+       #I think I want the break range consistent across all plots
+         breakRng<-quantile(MonthlyDiff,na.rm=TRUE,probs=c(.02,.98))
+         MonthlyDiff[MonthlyDiff<min(breakRng)]<-min(breakRng)
+         MonthlyDiff[MonthlyDiff>max(breakRng)]<-max(breakRng)
+         r<-max(abs(breakRng))
+         Breaks<-seq(from=-r,to=r,length=length(Colors)+1)
 
+         layout(matrix(c(1,2), 1, 2),c(6,1))
+         par(oma=c(0,2,2,0),mar=c(2,2,2,2))
+         my.filled.contour(x=countryLon,y=countryLat,z=MonthlyDiff,zlim=c(-r,r),color.palette=jet.colors,
+               plot.axes = {map("state",lwd=2,col="grey",add=TRUE) },
+                 xlab="Longitude",
+                 ylab="Latitude",main=paste(month.name[m],toupper(Vars[v]),"log((CMIP5 VIC + 2)/(CMIP3 VIC + 2))"),
+                 cex.lab=2,cex.main=2)
+
+           plot(c(0,1),extendrange(Breaks,f=.15)xaxt="n",yaxt'n",type="n")
+              rect(0,min(Breaks),.25,max(Breaks))
+              rect(0,Breaks[1:length(Breaks)-1],.25,Breaks[2:length(Breaks)],col=jet.colors(length(Breaks)-1),
+                 border=jet.colors(length(Breaks)-1))
+              Brks<-pretty(Breaks)
+              Brks<-Brks[Brks>=min(Breaks) & Brks<max(Breaks)]
+              segments(x0=.25,y0=Brks,x1=.3,y1=Brks)
+              text(x=.4,y=Brks,labels=signif(exp(Brks),digits=3))
+
+    dev.off()
+    
+#===================================
+#Straight Ratio Here
+#===================================
+   png(file.path(OutputGraphics,paste(Vars[v],month.abb[m],"VicRawRatio.png",sep="")),width=1000,
+                      height=700)
+    MonthlyDiff<-(ImgLst[[1]][[m]]+2)/(combineMapLst[[m]]+2) #I'm adding the 1 to avoid division by zero as well as
+    #Sgn<-sign(MonthlyDiff)
+    #MonthlyDiff<-Sgn*exp(abs(MonthlyDiff))
+    #small values leading to large differences
+       # breakRng<-range(MonthlyDiff,na.rm=TRUE)
+       #I think I want the break range consistent across all plots
+         breakRng<-quantile(MonthlyDiff,na.rm=TRUE,probs=c(.02,.98))
+         MonthlyDiff[MonthlyDiff<min(breakRng)]<-min(breakRng)
+         MonthlyDiff[MonthlyDiff>max(breakRng)]<-max(breakRng)
+         r<-max(abs(breakRng))
+         Breaks<-c(rev(1/seq(from=1,to=max(c(breakRng,1/breakRng)),length=50)),
+                   seq(from=1,to=max(c(breakRng,1/breakRng)),length=50)[2:50])
+        par(mar=c(6,5,6,6))
+           my.filled.contour(x=countryLon,y=countryLat,z=MonthlyDiff,zlim=c(-r,r),color.palette=jet.colors,
+               plot.axes = {map("state",lwd=2,col="grey",add=TRUE) },
+                 xlab="Longitude",
+                 ylab="Latitude",main=paste(month.name[m],toupper(Vars[v]),"log((CMIP5 VIC + 2)/(CMIP3 VIC + 2))"),
+                 cex.lab=2,cex.main=2)
+          image.plot(MonthlyDiff,col=jet.colors(length(Breaks)-1),breaks=Breaks,zlim=breakRng)
+    dev.off()
+    
 #=============================
 #Difference Here
 #=============================

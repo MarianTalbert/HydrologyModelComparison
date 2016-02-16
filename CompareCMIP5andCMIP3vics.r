@@ -1,7 +1,7 @@
 CompareVics<-function(ex,Paths){
  latName<-c("latitude","lat")
  lonName<-c("longitude","lon")        
- years<-1970:1999
+ years<-1950:1999
  SWE<-vector()
  Year<-vector()
  Month<-vector()
