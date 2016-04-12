@@ -7,7 +7,7 @@ library(viridis)
 
 source("C:\\GoogleDrive\\Climate\\Rcode\\my.image.plot.r")
 source("C:\\GoogleDrive\\Climate\\Rcode\\my.filled.contour.r")
-OutputGraphics<-"C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics3"
+OutputGraphics<-"C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics"
 latName <- c("latitude",rep("lat",times=8))
 lonName <- c("longitude",rep("lon",times=8))
 years <- 1988:1999
@@ -25,7 +25,7 @@ cmip3riog = "E:\\ClimateCache\\GDO\\BCSD\\ftp_mirror\\gdo-dcp.ucllnl.org\\pub\\d
  v=1
 #Vars<-c("runoff","swe","smc","et","petwater")
 CandidaData<-"C:\\Users\\mtalbert\\Downloads\\SWE_monthly_CONUS_12km_1987-2003.nc"
-
+SnowSites<-read.csv("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\SnotelLocs.csv")
  Paths<-paste(BasePaths,".",Vars[v],".",sep="")
  for(p in 1:length(Paths)){
  VarNames<-Vars[v]
@@ -83,7 +83,7 @@ CandidaData<-"C:\\Users\\mtalbert\\Downloads\\SWE_monthly_CONUS_12km_1987-2003.n
 }
 #I'm cobining the three small regions into one region by summing an array with na remove and then
 #masking out areas that were NA in all three
-combineMapLst<-list()
+vic407<-list()
 for(m in 1:12){ #months
 d<-array(data=NA,c(length(countryLon),length(countryLat),8))
  #put the three regions in my array
@@ -93,71 +93,97 @@ combineMap<-apply(d,c(1,2),mean,na.rm=TRUE)
 f<-function(x){sum(is.na(x))==8}
 NAmask<-apply(d,c(1,2),FUN=f)
 NAmask[NAmask==TRUE]<-NA
-combineMapLst[[m]]<-combineMap+NAmask
+vic407[[m]]<-combineMap+NAmask
 }
  
 
-monthlyChk<-list()
+monthlySatellite<-list()
 
 Clim<-nc_open(CandidaData)
  for(m in 1:12){
        for(yr in 1:length(years)){
        if(yr==1){ #do this for the first year only because it takes a bit to caluclate
-                 Lat <- ncvar_get(Clim,"lat")
-                 Lon <- ncvar_get(Clim,"lon")
+                 satLat <- ncvar_get(Clim,"lat")
+                 satLon <- ncvar_get(Clim,"lon")
                  Time<-ncvar_get(Clim,"time")
-                 OutputImg <- array(data=0,c(length(years),length(Lon),ncol=length(Lat)))
+                 OutputImg <- array(data=0,c(length(years),length(satLon),ncol=length(satLat)))
               }
        ind<-as.vector(which(as.character(Time)==paste(years[yr],ifelse(m<10,"0",""),m,sep=""),arr.ind=TRUE))
        print(paste(years[yr],ifelse(m<10,"0",""),m,sep=""))
        print(ind)
          RastArray<-ncvar_get(Clim,varid="swe",start=c(1,1,ind),
-                           count=c(length(Lon),length(Lat),1))
+                           count=c(length(satLon),length(satLat),1))
           OutputImg[yr,,] <- RastArray
                            
        }
-   monthlyChk[[m]]<-apply(OutputImg,c(2,3),mean,na.rm=TRUE)
+   monthlySatellite[[m]]<-apply(OutputImg,c(2,3),mean,na.rm=TRUE)
    f<-function(x,count){sum(is.na(x))==count}
 NAmask<-apply(OutputImg,c(2,3),FUN=f,count=length(years))
 NAmask[NAmask==TRUE]<-NA
-monthlyChk[[m]]<-monthlyChk[[m]]+NAmask
+monthlySatellite[[m]]<-monthlySatellite[[m]]+NAmask
   }
 nc_close(Clim)
 
-for(m in 1:12){
+vic412<-ImgLst[[1]]
+
+
+for(m in c(1,2,3,11,12)){
     #==============================
-    #plotting the three ratios
-    Colors<-c(colorRampPalette(c("blue","grey92"))(50),rev(colorRampPalette(c("red4","grey92"))(50)))
+    #plotting the three ratios both log and nonlog scale non log I take the greater of the exp(log(ratio)) and add a sign
+    #to indicate which was greater
+    Colors<-c(colorRampPalette(c("blue","grey96"))(50),"grey96","grey96",rev(colorRampPalette(c("red4","grey96"))(50)))
     breakRng<-c(-2,2)
     r<-max(abs(breakRng))
     Breaks<-seq(from=-r,to=r,length=length(Colors)+1)
-    
-   MonthlyDiff<-log((ImgLst[[1]][[m]]+2)/(monthlyChk[[m]][2:(nrow(monthlyChk[[m]])-1),2:(ncol(monthlyChk[[m]])-1)]+2))
-   myImagePlot(MonthlyDiff,"SWE","log((CMIP5 VIC + 2)/(Satelite))","CMIP5Satelite",m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors)
 
-   MonthlyDiff<-log((combineMapLst[[m]]+2)/(monthlyChk[[m]][2:(nrow(monthlyChk[[m]])-1),2:(ncol(monthlyChk[[m]])-1)]+2))
-   myImagePlot(MonthlyDiff,"SWE","log((CMIP3 VIC + 2)/(Satelite))","CMIP3Satelite",m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors)
-     
-   MonthlyDiff<-log((ImgLst[[1]][[m]]+2)/(combineMapLst[[m]]+2))
-   myImagePlot(MonthlyDiff,"SWE","log((CMIP5 VIC + 2)/(CMIP3 VIC + 2))","CMIP5CMIP3",m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors)
+    absbreakRng<-c(-10,10)
+    absBreaks<-seq(from=absbreakRng[1],to=absbreakRng[2],length=length(Colors)+1)
 
+   MonthlyDiff<-log((vic412[[m]]+5)/(monthlySatellite[[m]][2:(nrow(monthlySatellite[[m]])-1),2:(ncol(monthlySatellite[[m]])-1)]+5))
+   myImagePlot(MonthlyDiff,"SWE","log((CMIP5 VIC + 5)/(Satellite+5))","CMIP5Satellite",m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites)
+   NonLogScale<-exp(MonthlyDiff)*(exp(MonthlyDiff)>exp(-MonthlyDiff))+(-exp(-MonthlyDiff)*(exp(MonthlyDiff)<=exp(-MonthlyDiff)))
+   myImagePlot(NonLogScale,"SWE","(CMIP5 VIC + 5)/(Satellite+5)","NonLogCMIP5Satellite",m,absbreakRng,absBreaks,countryLat,
+        countryLon,OutputGraphics,Colors,SnowSites)
+   
+   #Satellite data is recorded mid month so maybe we should compare to the mean of this month and next month in the VICs
+   #this actually does much worse for some reason...
+   mean2Months<-(vic412[[m]]+vic412[[ifelse(m==12,1,m+1)]])/2
+   MonthlyDiff<-log((mean2Months+5)/(monthlySatellite[[m]][2:(nrow(monthlySatellite[[m]])-1),2:(ncol(monthlySatellite[[m]])-1)]+5))
+   myImagePlot(MonthlyDiff,"SWE","log((CMIP5 VIC + 5)/(Satellite+5))","CMIP5SatelliteMean2Months",
+      m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites)
+   NonLogScale<-exp(MonthlyDiff)*(exp(MonthlyDiff)>exp(-MonthlyDiff))+(-exp(-MonthlyDiff)*(exp(MonthlyDiff)<=exp(-MonthlyDiff)))
+   myImagePlot(NonLogScale,"SWE","(CMIP5 VIC + 5)/(Satellite+5)","NonLogCMIP5SatelliteMean2Months",m,absbreakRng,absBreaks,countryLat,
+        countryLon,OutputGraphics,Colors,SnowSites)
+   
+   
+   MonthlyDiff<-log((vic407[[m]]+5)/(monthlySatellite[[m]][2:(nrow(monthlySatellite[[m]])-1),2:(ncol(monthlySatellite[[m]])-1)]+5))
+   myImagePlot(MonthlyDiff,"SWE","log((CMIP3 VIC + 5)/(Satellite+5))","CMIP3Satellite",m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites)
+   NonLogScale<-exp(MonthlyDiff)*(exp(MonthlyDiff)>exp(-MonthlyDiff))+(-exp(-MonthlyDiff)*(exp(MonthlyDiff)<=exp(-MonthlyDiff)))
+   myImagePlot(NonLogScale,"SWE","(CMIP3 VIC + 5)/(Satellite+5)","NonLogCMIP5Satellite",m,absbreakRng,absBreaks,countryLat,
+        countryLon,OutputGraphics,Colors,SnowSites)
+        
+   MonthlyDiff<-log((vic412[[m]]+5)/(vic407[[m]]+5))
+   myImagePlot(MonthlyDiff,"SWE","log((CMIP5 VIC + 5)/(CMIP3 VIC + 5))","CMIP5CMIP3",m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites)
+   NonLogScale<-exp(MonthlyDiff)*(exp(MonthlyDiff)>exp(-MonthlyDiff))+(-exp(-MonthlyDiff)*(exp(MonthlyDiff)<=exp(-MonthlyDiff)))
+   myImagePlot(NonLogScale,"SWE","(CMIP5 VIC + 5)/(CMIP3 VIC+5)","NonLogCMIP5CMIP3",m,absbreakRng,absBreaks,countryLat,
+        countryLon,OutputGraphics,Colors,SnowSites)
    #==============================
    #now plotting the three data sets
    Colors   = magma(50,begin=1,end=0)
-   breakRng<-c(quantile(ImgLst[[1]][[m]],na.rm=TRUE,probs=c(.05,.95)),
-               quantile(combineMapLst[[m]],na.rm=TRUE,probs=c(.05,.95)),
-               quantile(monthlyChk[[m]],na.rm=TRUE,probs=c(.05,.95)))
+   breakRng<-c(quantile(vic412[[m]],na.rm=TRUE,probs=c(.05,.95)),
+               quantile(vic407[[m]],na.rm=TRUE,probs=c(.05,.95)),
+               quantile(monthlySatellite[[m]],na.rm=TRUE,probs=c(.05,.95)))
    r<-max(abs(breakRng))
    Breaks<-seq(from=min(breakRng),to=max(breakRng),length=length(Colors)+1)
    
-   MonthlyDiff<-ImgLst[[1]][[m]]
+   MonthlyDiff<-vic412[[m]]
    myImagePlot(MonthlyDiff,"SWE","CMIP5","CMIP5",m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors)
     
-   MonthlyDiff<-combineMapLst[[m]]
+   MonthlyDiff<-vic407[[m]]
    myImagePlot(MonthlyDiff,"SWE","CMIP3","CMIP3",m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors)
    
-   MonthlyDiff<-monthlyChk[[m]]
-   myImagePlot(MonthlyDiff[2:(nrow(monthlyChk[[m]])-1),2:(ncol(monthlyChk[[m]])-1)],"SWE","Satelite",
+   MonthlyDiff<-monthlySatellite[[m]]
+   myImagePlot(MonthlyDiff[2:(nrow(monthlySatellite[[m]])-1),2:(ncol(monthlySatellite[[m]])-1)],"SWE","Satelite",
    "Satelite",m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors)
 }
 
