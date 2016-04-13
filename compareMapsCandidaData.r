@@ -136,36 +136,37 @@ for(m in c(1,2,3,11,12)){
     r<-max(abs(breakRng))
     Breaks<-seq(from=-r,to=r,length=length(Colors)+1)
 
-    absbreakRng<-c(-10,10)
+    absbreakRng<-c(-3,3)
     absBreaks<-seq(from=absbreakRng[1],to=absbreakRng[2],length=length(Colors)+1)
 
-   MonthlyDiff<-log((vic412[[m]]+5)/(monthlySatellite[[m]][2:(nrow(monthlySatellite[[m]])-1),2:(ncol(monthlySatellite[[m]])-1)]+5))
-   myImagePlot(MonthlyDiff,"SWE","log((CMIP5 VIC + 5)/(Satellite+5))","CMIP5Satellite",m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites)
+   MonthlyDiff<-log((vic412[[m]]+10)/(monthlySatellite[[m]][2:(nrow(monthlySatellite[[m]])-1),2:(ncol(monthlySatellite[[m]])-1)]+10))
+   myImagePlot(MonthlyDiff,"SWE","log((CMIP5 VIC + 10)/(Satellite+10))","CMIP5Satellite",m,breakRng,
+      Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites,LogToAbs=TRUE)
    NonLogScale<-exp(MonthlyDiff)*(exp(MonthlyDiff)>exp(-MonthlyDiff))+(-exp(-MonthlyDiff)*(exp(MonthlyDiff)<=exp(-MonthlyDiff)))
-   myImagePlot(NonLogScale,"SWE","(CMIP5 VIC + 5)/(Satellite+5)","NonLogCMIP5Satellite",m,absbreakRng,absBreaks,countryLat,
+   myImagePlot(NonLogScale,"SWE","(CMIP5 VIC + 10)/(Satellite+10)","NonLogCMIP5Satellite",m,absbreakRng,absBreaks,countryLat,
         countryLon,OutputGraphics,Colors,SnowSites)
    
    #Satellite data is recorded mid month so maybe we should compare to the mean of this month and next month in the VICs
    #this actually does much worse for some reason...
    mean2Months<-(vic412[[m]]+vic412[[ifelse(m==12,1,m+1)]])/2
-   MonthlyDiff<-log((mean2Months+5)/(monthlySatellite[[m]][2:(nrow(monthlySatellite[[m]])-1),2:(ncol(monthlySatellite[[m]])-1)]+5))
-   myImagePlot(MonthlyDiff,"SWE","log((CMIP5 VIC + 5)/(Satellite+5))","CMIP5SatelliteMean2Months",
+   MonthlyDiff<-log((mean2Months+10)/(monthlySatellite[[m]][2:(nrow(monthlySatellite[[m]])-1),2:(ncol(monthlySatellite[[m]])-1)]+10))
+   myImagePlot(MonthlyDiff,"SWE","log((CMIP5 VIC + 10)/(Satellite+10))","CMIP5SatelliteMean2Months",
       m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites)
    NonLogScale<-exp(MonthlyDiff)*(exp(MonthlyDiff)>exp(-MonthlyDiff))+(-exp(-MonthlyDiff)*(exp(MonthlyDiff)<=exp(-MonthlyDiff)))
-   myImagePlot(NonLogScale,"SWE","(CMIP5 VIC + 5)/(Satellite+5)","NonLogCMIP5SatelliteMean2Months",m,absbreakRng,absBreaks,countryLat,
-        countryLon,OutputGraphics,Colors,SnowSites)
+   myImagePlot(MonthlyDiff,"SWE","(CMIP5 VIC + 10)/(Satellite+10)","NonLogCMIP5SatelliteMean2Months",m,absbreakRng,absBreaks,countryLat,
+        countryLon,OutputGraphics,Colors,SnowSites,LogToAbs=TRUE)
    
    
-   MonthlyDiff<-log((vic407[[m]]+5)/(monthlySatellite[[m]][2:(nrow(monthlySatellite[[m]])-1),2:(ncol(monthlySatellite[[m]])-1)]+5))
-   myImagePlot(MonthlyDiff,"SWE","log((CMIP3 VIC + 5)/(Satellite+5))","CMIP3Satellite",m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites)
+   MonthlyDiff<-log((vic407[[m]]+10)/(monthlySatellite[[m]][2:(nrow(monthlySatellite[[m]])-1),2:(ncol(monthlySatellite[[m]])-1)]+10))
+   #myImagePlot(MonthlyDiff,"SWE","log((CMIP3 VIC + 10)/(Satellite+10))","CMIP3Satellite",m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites)
    NonLogScale<-exp(MonthlyDiff)*(exp(MonthlyDiff)>exp(-MonthlyDiff))+(-exp(-MonthlyDiff)*(exp(MonthlyDiff)<=exp(-MonthlyDiff)))
-   myImagePlot(NonLogScale,"SWE","(CMIP3 VIC + 5)/(Satellite+5)","NonLogCMIP5Satellite",m,absbreakRng,absBreaks,countryLat,
+   myImagePlot(NonLogScale,"SWE","(CMIP3 VIC + 10)/(Satellite+10)","NonLogCMIP5Satellite",m,absbreakRng,absBreaks,countryLat,
         countryLon,OutputGraphics,Colors,SnowSites)
         
-   MonthlyDiff<-log((vic412[[m]]+5)/(vic407[[m]]+5))
-   myImagePlot(MonthlyDiff,"SWE","log((CMIP5 VIC + 5)/(CMIP3 VIC + 5))","CMIP5CMIP3",m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites)
+   MonthlyDiff<-log((vic412[[m]]+10)/(vic407[[m]]+10))
+   #myImagePlot(MonthlyDiff,"SWE","log((CMIP5 VIC + 10)/(CMIP3 VIC + 10))","CMIP5CMIP3",m,breakRng,Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites)
    NonLogScale<-exp(MonthlyDiff)*(exp(MonthlyDiff)>exp(-MonthlyDiff))+(-exp(-MonthlyDiff)*(exp(MonthlyDiff)<=exp(-MonthlyDiff)))
-   myImagePlot(NonLogScale,"SWE","(CMIP5 VIC + 5)/(CMIP3 VIC+5)","NonLogCMIP5CMIP3",m,absbreakRng,absBreaks,countryLat,
+   myImagePlot(NonLogScale,"SWE","(CMIP5 VIC + 10)/(CMIP3 VIC+10)","NonLogCMIP5CMIP3",m,absbreakRng,absBreaks,countryLat,
         countryLon,OutputGraphics,Colors,SnowSites)
    #==============================
    #now plotting the three data sets
