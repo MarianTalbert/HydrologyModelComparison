@@ -1,9 +1,21 @@
-ui <- bootstrapPage(
-  tags$style(type="text/css", "html, body {width:100%;height:100%}"),
-  leafletOutput("Map", width="100%", height="100%"),
-  absolutePanel(top=10, right=10,
-                selectInput("location", "Community", c("", locs$loc), selected=""),
-                conditionalPanel("input.location !== null && input.location !== ''",
-                                 actionButton("button_plot_and_table", "View Plot/Table", class="btn-block"))
-  )
+
+ui = fluidPage(fluidRow(
+    column(2,
+           selectInput("mapVar", "Variable",
+                       choices=c("Snow Water Equivilant","Runoff","Soil Moisture Content","ET"),
+                       selected="Snow Water Equivilant")),
+    column(2,
+           selectInput("mapRCP", "Emissions Path",
+                       choices=c("High (RCP 8.5)","Mid Low (RCP 4.5)"),
+                       selected="Mid Low (RCP 4.5)")),
+    column(2,
+           selectInput("mapTime", "Time Period",
+                       choices=c("Annual","Jan","Feb","March","April","May","June","July",
+                                 "August","September","October","November","December"),
+                       selected="1990s")),
+    column(2,sliderInput("mapTrans","Transparency", 0, 1,.8)),    
+    column(2,
+           checkboxInput("diffFromHist", label = "Show difference from historic period", value = FALSE))
+  ),
+  leafletOutput('Map')
 )
