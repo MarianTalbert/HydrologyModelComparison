@@ -28,20 +28,7 @@ shinyServer(function(input, output,session) {
     if(input$mapVar=="runoff") return(ShinyMapLst[[2]])
     if(input$mapVar=="smc") return(ShinyMapLst[[3]])
   })
-  MapPal1=reactive({
-    
-      pal = colorNumeric("OrRd",domain=c(19,100),
-                         na.color = "transparent")
-   
-    return(pal)
-  })
-  MapPal2=reactive({
-    
-    pal = colorNumeric("Blues",domain=c(19,100),
-                       na.color = "transparent")
-    
-    return(pal)
-  })
+  
   output$Map <- renderLeaflet({
     #This is getting to be a mess I should probably write out the rasters
     #to a the file system and construct their names from the input choices
@@ -53,7 +40,7 @@ shinyServer(function(input, output,session) {
     diffMap<-input$diffFromHist
     dataset <- MapLst()
     Title<-MapLab()
-    #colRange<-VarRng[[Mapi]]
+    
     
     if(!inherits(dataset,"list")){ 
       #for elevation the options are a bit more limted
@@ -62,16 +49,25 @@ shinyServer(function(input, output,session) {
       diffMap=FALSE
     }
     
+      blueCols<-rev(c(colorRampPalette(c("blue","grey96"))(10),
+                      "grey96"))
+      redCols<-rev(c(colorRampPalette(c("red4","grey96"))(10),"grey96"))
+      Colors<-c(rev(blueCols),redCols)
+      pal = colorNumeric(Colors,domain=c(-1.2,1.2),
+                         na.color = "transparent")
+      palblue <- colorBin(blueCols,domain=c(exp(0),exp(1.2)))
+      palred <- colorBin(redCols,domain=c(exp(0),exp(1.2)))
  
         dataset[[TimePeriod]][[RcpChoice]]<-
           (dataset[[TimePeriod]][[RcpChoice]]-dataset[[1]][[1]])
         Title<-"Change in Temperature"
     
     MyMap<-leaflet() %>% addTiles() %>%  addRasterImage(dataset[[TimePeriod]][[RcpChoice]],
-                  colors = MapPal1(), 
+                  colors = pal, 
                   opacity = input$mapTrans) %>%
-      addLegend(pal = MapPal1(), values = VarRng[[1]],title=Title) %>%
-      addLegend(pal = MapPal2(), values = VarRng[[1]],title=Title)
+      addLegend(pal = palblue,values=c(exp(0),exp(1.2)),
+                title="VIC 4.0.7/VIC 4.1.2") %>%
+      addLegend(pal = palred, values = c(exp(0),exp(1.2)),title="VIC 4.1.2/VIC 4.0.7")
    
     return(MyMap)
   })
