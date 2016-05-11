@@ -5,7 +5,7 @@ library(rgdal)
 
 source("C:\\GoogleDrive\\Climate\\Rcode\\my.image.plot.r")
 source("C:\\GoogleDrive\\Climate\\Rcode\\my.filled.contour.r")
-OutputGraphics<-"C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics"
+OutputGraphics<-"C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics4"
 latName <- c("latitude",rep("lat",times=8))
 lonName <- c("longitude",rep("lon",times=8))
 years <- 1950:1999
@@ -88,7 +88,7 @@ d<-array(data=NA,c(length(countryLon),length(countryLat),8))
  #put the three regions in my array
  for(rgn in 1:8){ d[,,rgn]<-ImgLst[[(rgn+1)]][[m]]}
 
-combineMap<-apply(d,c(1,2),sum,na.rm=TRUE) 
+combineMap<-apply(d,c(1,2),mean,na.rm=TRUE)
 f<-function(x){sum(is.na(x))==8}
 NAmask<-apply(d,c(1,2),FUN=f)
 NAmask[NAmask==TRUE]<-NA
@@ -111,19 +111,29 @@ for(m in 1:12){
     #small values leading to large differences
        # breakRng<-range(MonthlyDiff,na.rm=TRUE)
        #I think I want the break range consistent across all plots
-         breakRng<-quantile(MonthlyDiff,na.rm=TRUE,probs=c(.02,.98))
+        breakRng<-c(-1.5,1.5)
          MonthlyDiff[MonthlyDiff<min(breakRng)]<-min(breakRng)
          MonthlyDiff[MonthlyDiff>max(breakRng)]<-max(breakRng)
-         r<-max(abs(breakRng))
-         Breaks<-seq(from=-r,to=r,length=length(Colors)+1)
-        par(mar=c(6,5,6,6))
-         my.filled.contour(x=countryLon,y=countryLat,z=MonthlyDiff,zlim=c(-r,r),color.palette=jet.colors,
+         #breaks are evenly spaced on the log scale
+         Breaks<- seq(from=min(breakRng),to=max(breakRng),length=20)
+
+         layout(matrix(c(1,2), 1, 2),c(6,1))
+         par(oma=c(0,2,2,0),mar=c(2,2,2,2))
+         my.filled.contour(x=countryLon,y=countryLat,z=MonthlyDiff,zlim=range(Breaks),color.palette=jet.colors,
                plot.axes = {map("state",lwd=2,col="grey",add=TRUE) },
                  xlab="Longitude",
-                 ylab="Latitude",main=paste(month.name[m],toupper(Vars[v]),"log((CMIP5 VIC + 2)/(CMIP3 VIC + 2))"),
+                 ylab="Latitude",main=paste(month.name[m],toupper(Vars[v]),"(CMIP5 VIC + 2)/(CMIP3 VIC + 2)"),
                  cex.lab=2,cex.main=2)
-           par(oma=c( 0,1,0,0))
-             my.image.plot(MonthlyDiff,legend.only=TRUE,col=jet.colors(length(Breaks)-1),breaks=Breaks,zlim=c(-r,r),cex.axis=1.5)
+           Breaks<-seq(from=-1.2,to=1.2,length=50)
+           plot(x=c(0,1),y=extendrange(Breaks,f=.15),xaxt="n",yaxt="n",type="n",bty="n")
+              rect(0,min(Breaks),.25,max(Breaks))
+              rect(0,Breaks[1:length(Breaks)-1],.25,Breaks[2:length(Breaks)],col=jet.colors(length(Breaks)-1),
+                 border=jet.colors(length(Breaks)-1))
+              Brks<-c(.33,.5,1,2,3)
+
+              segments(x0=.3,y0=log(Brks),x1=.35,y1=log(Brks))
+              #text(x=1,y=log(Brks),labels=signif(log(Brks),digits=3))
+              text(x=.5,y=log(Brks),labels=signif(Brks,digits=3))
     dev.off()
 
 #=============================
