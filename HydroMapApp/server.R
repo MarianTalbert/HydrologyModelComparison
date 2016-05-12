@@ -6,7 +6,11 @@ shinyServer(function(input, output,session) {
   
   #======================================	
   # create the map
- 
+    MapLst<-reactive({
+        if(input$mapVar=="swe") return(ShinyMapLst[[1]])
+        if(input$mapVar=="runoff") return(ShinyMapLst[[2]])
+        if(input$mapVar=="smc") return(ShinyMapLst[[3]])
+      })
   
   Mapi=reactive({   
     switch(input$mapVar,
@@ -23,31 +27,18 @@ shinyServer(function(input, output,session) {
            smc ="Soil Moisture Content",
            et ="Evapotranspiration Actual")})
   
-  MapLst<-reactive({
-    if(input$mapVar=="swe") return(ShinyMapLst[[1]])
-    if(input$mapVar=="runoff") return(ShinyMapLst[[2]])
-    if(input$mapVar=="smc") return(ShinyMapLst[[3]])
-  })
-  
+ 
   output$Map <- renderLeaflet({
     #This is getting to be a mess I should probably write out the rasters
     #to a the file system and construct their names from the input choices
    
     TimePeriod<-as.numeric(input$mapTime)
-   
+    dataset <- MapLst()
     RcpChoice<-1
   
     diffMap<-input$diffFromHist
-    dataset <- MapLst()
     Title<-MapLab()
     
-    
-    if(!inherits(dataset,"list")){ 
-      #for elevation the options are a bit more limted
-      dataset<-list(list(dataset))
-      TimePeriod=1
-      diffMap=FALSE
-    }
     
       blueCols<-rev(c(colorRampPalette(c("blue","grey96"))(10),
                       "grey96"))
@@ -58,18 +49,32 @@ shinyServer(function(input, output,session) {
       palblue <- colorBin(blueCols,domain=c(exp(0),exp(1.2)))
       palred <- colorBin(redCols,domain=c(exp(0),exp(1.2)))
  
-        dataset[[TimePeriod]][[RcpChoice]]<-
-          (dataset[[TimePeriod]][[RcpChoice]]-dataset[[1]][[1]])
-        Title<-"Change in Temperature"
-    
     MyMap<-leaflet() %>% addTiles() %>%  addRasterImage(dataset[[TimePeriod]][[RcpChoice]],
                   colors = pal, 
                   opacity = input$mapTrans) %>%
       addLegend(pal = palblue,values=c(exp(0),exp(1.2)),
                 title="VIC 4.0.7/VIC 4.1.2") %>%
-      addLegend(pal = palred, values = c(exp(0),exp(1.2)),title="VIC 4.1.2/VIC 4.0.7")
+      addLegend(pal = palred, values = c(exp(0),exp(1.2)),
+                title="VIC 4.1.2/VIC 4.0.7")%>%
+      addCircleMarkers(lat = latitude, lng = longitude, radius = .3, 
+                      color="black",layerId=ids)
    
     return(MyMap)
+  })
+ 
+  
+  observe({
+    click<-input$map_marker_click
+    if(is.null(click))
+      return()
+    text<-paste("Lattitude ", click$lat, "Longtitude ", click$lng)
+    text2<-paste("You've selected point ", click$id)
+    Map$clearPopups()
+    Map$showPopup( click$lat, click$lng, text)
+    output$Click_text<-renderText({
+      text2
+    })
+    
   })
 
 })   
