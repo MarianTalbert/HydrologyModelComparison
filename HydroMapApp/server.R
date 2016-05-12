@@ -29,7 +29,18 @@ shinyServer(function(input, output,session) {
   
  
   output$Map <- renderLeaflet({
-    MyMap<-leaflet() %>% addTiles()  
+    blueCols<-rev(c(colorRampPalette(c("blue","grey96"))(10),
+                    "grey96"))
+    redCols<-rev(c(colorRampPalette(c("red4","grey96"))(10),"grey96"))
+    palblue <- colorBin(blueCols,domain=c(exp(0),exp(1.2)))
+    palred <- colorBin(redCols,domain=c(exp(0),exp(1.2)))
+    MyMap<-leaflet() %>% addTiles()%>%
+      addCircleMarkers(lat = latitude, lng = longitude, radius = .3, 
+                       color="black",layerId=ids) %>% 
+      addLegend(pal = palblue,values=c(exp(0),exp(1.2)),
+                title="VIC 4.0.7/VIC 4.1.2") %>%
+      addLegend(pal = palred, values = c(exp(0),exp(1.2)),
+                title="VIC 4.1.2/VIC 4.0.7")  
     return(MyMap)
   })
  observe({
@@ -52,13 +63,7 @@ shinyServer(function(input, output,session) {
    proxy %>%
      addRasterImage(dataset[[TimePeriod]][[RcpChoice]],
                     colors = pal, 
-                    opacity = input$mapTrans)%>%
-     #addCircleMarkers(lat = latitude, lng = longitude, radius = .3, 
-     #                 color="black",layerId=ids) %>% 
-     addLegend(pal = palblue,values=c(exp(0),exp(1.2)),
-               title="VIC 4.0.7/VIC 4.1.2") %>%
-     addLegend(pal = palred, values = c(exp(0),exp(1.2)),
-               title="VIC 4.1.2/VIC 4.0.7")
+                    opacity = input$mapTrans)
  })
   
 })   
