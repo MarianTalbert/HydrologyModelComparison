@@ -6,8 +6,9 @@ library(RColorBrewer)
 library(viridis)
 library(wesanderson)
 library(ggplot2)
-source("C:\\GoogleDrive\\Climate\\Rcode\\my.image.plot.r")
+source("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\HydroCode\\myImagePlot.r")
 source("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\HydroCode\\my.filled.contour.r")
+source("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\HydroCode\\convertToRaster.r")
 OutputGraphics<-"C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics"
 latName <- c("latitude",rep("lat",times=8))
 lonName <- c("longitude",rep("lon",times=8))
@@ -159,6 +160,9 @@ for(v in 1:length(Vars)){
       #=========
        # Vic412 vs Vic407
        MonthlyDiff<-log((vic412[[m]]+10)/(vic407[[m]]+10))
+
+        MonthlyDiff[MonthlyDiff<min(breakRng)]<-min(breakRng)
+        MonthlyDiff[MonthlyDiff>max(breakRng)]<-max(breakRng)
        myImagePlot(MonthlyDiff,plotLabels[v],"(VIC 4.1.2 + 10)/(VIC 4.0.7 + 10)","CMIP5CMIP3",m,breakRng,Breaks,countryLat,
          countryLon,OutputGraphics,Colors,SnowSites,LogToAbs=TRUE)
        OutputLst[[m]]$vic412vic407<-convertToRaster(MonthlyDiff,countryLon,countryLat,RastType="GTiff")
@@ -169,6 +173,8 @@ for(v in 1:length(Vars)){
            #=========
            # Vic412 vs Satellite
            MonthlyDiff<-log((vic412[[m]]+10)/(monthlySatellite[[m]][2:(nrow(monthlySatellite[[m]])-1),2:(ncol(monthlySatellite[[m]])-1)]+10))
+             MonthlyDiff[MonthlyDiff<min(breakRng)]<-min(breakRng)
+             MonthlyDiff[MonthlyDiff>max(breakRng)]<-max(breakRng)
            myImagePlot(MonthlyDiff,plotLabels[v],"(VIC 4.1.2 + 10)/(Satellite+10)","CMIP5Satellite",m,breakRng,
               Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites,LogToAbs=TRUE)
 
@@ -179,7 +185,8 @@ for(v in 1:length(Vars)){
            #=========
            # Vic407 vs Satellite
            MonthlyDiff<-log((vic407[[m]]+10)/(monthlySatellite[[m]][2:(nrow(monthlySatellite[[m]])-1),2:(ncol(monthlySatellite[[m]])-1)]+10))
-
+               MonthlyDiff[MonthlyDiff<min(breakRng)]<-min(breakRng)
+               MonthlyDiff[MonthlyDiff>max(breakRng)]<-max(breakRng)
            OutputLst[[m]]$vic407Sat<-convertToRaster(MonthlyDiff,countryLon,countryLat,RastType="GTiff")
            myImagePlot(MonthlyDiff,plotLabels[v],"(VIC 4.0.7 + 10)/(Satellite+10)","CMIP3Satellite",m,breakRng,Breaks,countryLat,countryLon,
               OutputGraphics,Colors,SnowSites,LogToAbs=TRUE)
@@ -196,6 +203,9 @@ for(v in 1:length(Vars)){
      # and now do the annual
      OutputLst[[13]]<-list()
     AnnualSumRast<-log((VIC412AnnSumRast+50)/(VIC407AnnSumRast+50))
+       AnnualSumRast[AnnualSumRast<min(breakRng)]<-min(breakRng)
+       AnnualSumRast[AnnualSumRast>max(breakRng)]<-max(breakRng)
+       
      myImagePlot(AnnualSumRast,plotLabels[v],"log((VIC 4.1.2 + 50)/(VIC 4.0.7 + 50))","CMIP5CMIP3Annual",m=0,breakRng,
           Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites,LogToAbs=TRUE)
     OutputLst[[13]]$vic412vic407<-convertToRaster(AnnualSumRast,countryLon,countryLat,RastType="GTiff")
@@ -203,11 +213,16 @@ for(v in 1:length(Vars)){
     if(Vars[v]=="swe"){
         SateliteAnnSumRast<-Reduce("+",monthlySatellite)[2:(nrow(monthlySatellite[[m]])-1),2:(ncol(monthlySatellite[[m]])-1)]
          AnnualSumRast<-log((VIC412AnnSumRast+50)/(SateliteAnnSumRast+50))
+             AnnualSumRast[AnnualSumRast<min(breakRng)]<-min(breakRng)
+             AnnualSumRast[AnnualSumRast>max(breakRng)]<-max(breakRng)
          myImagePlot(AnnualSumRast,plotLabels[v],"log((VIC 4.1.2 + 50)/(Satellite + 50))","CMIP5CSatelliteAnnual",m=0,breakRng,
               Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites,LogToAbs=TRUE)
         OutputLst[[13]]$vic412Sat<-convertToRaster(AnnualSumRast,countryLon,countryLat,RastType="GTiff")
 
         AnnualSumRast<-log((VIC407AnnSumRast+50)/(SateliteAnnSumRast+50))
+            AnnualSumRast[AnnualSumRast<min(breakRng)]<-min(breakRng)
+            AnnualSumRast[AnnualSumRast>max(breakRng)]<-max(breakRng)
+            
          myImagePlot(AnnualSumRast,plotLabels[v],"log((VIC 4.1.2 + 50)/(Satellite + 50))","CMIP3SatelliteAnnual",m=0,breakRng,
               Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites,LogToAbs=TRUE)
         OutputLst[[13]]$vic407Sat<-convertToRaster(AnnualSumRast,countryLon,countryLat,RastType="GTiff")
