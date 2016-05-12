@@ -1,8 +1,19 @@
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output,session) {
-  dat<-NA
-  #===== Available Shapefiles Update =======#
+  output$myChart<-renderChart2({
+    #browser()
+    Dat<-MonthlyByStation[MonthlyByStation$SiteName==input$station,]
+    Dat2Use<-data.frame(Response=as.vector(c(Dat$VIC407,Dat$VIC412,Dat$Sat,Dat$SNOTEL)),
+                        Month=as.numeric(rep(Dat$Month,times=4)),
+                        Model=as.character(rep(c("VIC407","VIC412","Satellite","SNOTEL"),
+                                               each=12)))
+            myPlot<-nPlot(Response~Month,data=Dat2Use,group="Model",
+                          type = "lineChart")
+            myPlot$yAxis(axisLabel="Snow Water Equivilant")
+            myPlot$xAxis(axisLabel="Month")
+  return(myPlot)                      
+  })
   
   #======================================	
   # create the map
