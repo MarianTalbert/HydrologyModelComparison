@@ -1,10 +1,12 @@
 
 ui = fluidPage(
+  h4("Comparing Hydrology Model Output"),
   sidebarLayout(
     sidebarPanel(
       
          selectInput("mapVar", "Variable",
-                     choices=c("swe","runoff","smc","et"),
+                     choices=c("Snow Water Equivilant"="swe","Runoff"="runoff",
+                               "Soil Moisture Content"="smc"),
                      selected="swe"),
     
          selectInput("mapTime", "Time Period",
@@ -15,7 +17,7 @@ ui = fluidPage(
                      selected=13),
         sliderInput("mapTrans","Transparency", 0, 1,.8),
         selectInput("station","Station:",choices=unique(MonthlyByStation$SiteName)),
-      width=3
+      width=2
     ),
     mainPanel(
       leafletOutput('Map'),

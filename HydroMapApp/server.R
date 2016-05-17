@@ -46,8 +46,6 @@ shinyServer(function(input, output,session) {
     palblue <- colorBin(blueCols,domain=c(exp(0),exp(1.2)))
     palred <- colorBin(redCols,domain=c(exp(0),exp(1.2)))
     MyMap<-leaflet() %>% addTiles()%>%
-      addCircleMarkers(lat = latitude, lng = longitude, radius = .3, 
-                       color="black",layerId=ids) %>% 
       addLegend(pal = palblue,values=c(exp(0),exp(1.2)),
                 title="VIC 4.0.7/VIC 4.1.2") %>%
       addLegend(pal = palred, values = c(exp(0),exp(1.2)),
@@ -76,5 +74,25 @@ shinyServer(function(input, output,session) {
                     colors = pal, 
                     opacity = input$mapTrans)
  })
+ 
+ observe({
+   proxy<-leafletProxy("Map")
   
+     station<-MonthlyByStation$SiteName
+     Lon<-as.numeric((MonthlyByStation[MonthlyByStation$SiteName==input$station,7])[1])
+     Lat<-as.numeric((MonthlyByStation[MonthlyByStation$SiteName==input$station,8])[1])
+     ind<-which((latitude==Lat & longitude==Lon),arr.ind=TRUE) 
+     col<-rep("black",times=length(longitude))
+     rad<-rep(.1,times=length(longitude))
+     Alph<-rep(.3,times=length(longitude))
+     col[ind]<-"red"
+     rad[ind]<-5
+     Alph[ind]<-1
+     if(input$mapVar!="swe")  Alph<-rep(0,times=length(longitude))
+     
+     proxy%>%addCircleMarkers(lat = latitude, lng = longitude, radius = rad, 
+                              color=col,layerId=ids,opacity=Alph,fillOpacity = Alph)
+   
+ })
+ 
 })   
