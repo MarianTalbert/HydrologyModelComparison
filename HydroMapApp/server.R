@@ -1,20 +1,26 @@
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output,session) {
-  output$myChart<-renderChart2({
-    #browser()
-    Dat<-MonthlyByStation[MonthlyByStation$SiteName==input$station,]
+ 
+   output$myChart<-renderChart2({
+   
+    id<-input$Map_marker_click$id
+    if(input$mapVar!="swe") id<-NULL
+    Dat<-MonthlyByStation[MonthlyByStation$SiteName==id,]
     Dat2Use<-data.frame(Response=as.vector(c(Dat$VIC407,Dat$VIC412,Dat$Sat,Dat$SNOTEL)),
-                        Month=as.numeric(rep(Dat$Month,times=4)),
+                        Month=as.numeric(rep(Dat$Month,times=ifelse(is.null(id),0,4))),
                         Model=as.character(rep(c("VIC407","VIC412","Satellite","SNOTEL"),
-                                               each=12)))
+                                               each=ifelse(is.null(id),0,12))))
             myPlot<-nPlot(Response~Month,data=Dat2Use,group="Model",
                           type = "lineChart")
-            myPlot$yAxis(axisLabel="Snow Water Equivilant")
+            myPlot$yAxis(axisLabel=paste("Snow Water Equivilant",id))
+            myPlot$chart(margin = list(left = 100))
             myPlot$xAxis(axisLabel="Month")
-  return(myPlot)                      
+           
+  return(myPlot)
+   
   })
-  
+ 
   #======================================	
   # create the map
     MapLst<-reactive({
@@ -46,6 +52,7 @@ shinyServer(function(input, output,session) {
     palblue <- colorBin(blueCols,domain=c(exp(0),exp(1.2)))
     palred <- colorBin(redCols,domain=c(exp(0),exp(1.2)))
     MyMap<-leaflet() %>% addTiles()%>%
+      addProviderTiles("CartoDB.Positron") %>%
       addLegend(pal = palblue,values=c(exp(0),exp(1.2)),
                 title="VIC 4.0.7/VIC 4.1.2") %>%
       addLegend(pal = palred, values = c(exp(0),exp(1.2)),
@@ -74,13 +81,19 @@ shinyServer(function(input, output,session) {
                     colors = pal, 
                     opacity = input$mapTrans)
  })
+
  
+ observeEvent(input$Map_click,{
+   print("map")
+   browser()
+   data$clickedMarker <- NULL
+   print(data$clickedMarker)})
  observe({
    proxy<-leafletProxy("Map")
-  
+    id<-input$Map_marker_click$id
      station<-MonthlyByStation$SiteName
-     Lon<-as.numeric((MonthlyByStation[MonthlyByStation$SiteName==input$station,7])[1])
-     Lat<-as.numeric((MonthlyByStation[MonthlyByStation$SiteName==input$station,8])[1])
+     Lon<-as.numeric((MonthlyByStation[MonthlyByStation$SiteName==id,7])[1])
+     Lat<-as.numeric((MonthlyByStation[MonthlyByStation$SiteName==id,8])[1])
      ind<-which((latitude==Lat & longitude==Lon),arr.ind=TRUE) 
      col<-rep("black",times=length(longitude))
      rad<-rep(.1,times=length(longitude))

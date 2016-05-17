@@ -1,0 +1,180 @@
+<!--div style = "background-color: #fcc; width: 100%; height: 100%; border-radius: 3px;"-->
+<!DOCTYPE html>
+<html>
+
+<body>
+<h1>Graphics Catalog for Climate Primers</h1>
+ 
+<br>
+<h2>Marian Talbert, John Gross, Jeff Morisette</h2>
+<h4>Introduction</h4>
+<br>
+<p>This document is designed to demonstrate the graphics that we have made available for the North Central Climate Science Center to provide climate related graphics to describe the climate history as well as         projections for a specified area of interest.  Once you have specified your region of interest along with a few other parameters required for production of the graphics, this document will be generated with graphics for your region allowing you the opportunity to view the graphics, select the ones most appropriate for your interest as well as recommend any potential modifications using the accompanying graphics menu worksheet.  Please understand that all graphics are provided as a courtesy and while we make reasonable efforts to ensure that our graphics are accurate we cannot absolutely guaranteed that they are correct in every regard.</p>
+
+<h4>Default Data sources</h4> 
+<p>The data sources as well as the North Central Climate Science Center should be cited or acknowledged in any publications using these graphics.  Proper citations are provided in the references section.</p>  
+
+<ul>
+  <li> Historic: </li>
+      <ul>
+        <li> PRISM (4km)  downloaded from the <a href="http://cida.usgs.gov/thredds/dodsC/prism"> Geo Data Portal </a>.  The data is documented on the <a href="http://prism.oregonstate.edu"> PRISM website </a> \cite{PRISM}.  PRISM is the default historic dataset for consideration of historic trends. </li>
+        <li> Maurer (1/8 degree) was downloaded from the G<a href="http://cida.usgs.gov/thredds/dodsC/prism"> Geo Data Portal </a> and documented on the <a href="http://www.engr.scu.edu/~emaurer/gridded_obs/index_gridded_obs.html"> Maurer Website </a> and is used for any graphics or tables comparing change from current to future conditions \cite{Maurer}.  This rather than PRISM is the appropriate dataset for this purpose because Maurer was used to downscale the projection data used in non-spatial graphics.  Because interpolated datasets disagree in some regions  there is a concern that changes between time periods could be due to changes in the base interpolated dataset  rather than due to the expected conditions for the time periods.  Maurer data is only available from 1950 to 2010 so the standard baseline used for PRISM (1895 to 2013) cannot be used when Maurer is the appropriate historic data set. </li>   
+      </ul>
+  <li> Projections: </li>
+  <ul>
+     <li> For non-spatial graphics CMIP5 projections as well as hydrologic monthly projections at 1/8th degree downscaled using BCSD for all emissions pathways and available.  Projections are downloaded from the Green Data Oasis by default.  More documentation regarding the CMIP5 multi-model dataset as well as the directions on how to cite this source for publications  is available at the <a href="http://gdo-dcp.ucllnl.org/downscaled_cmip_projections/dcpInterface.html"> Green Data Oasis website </a> \cite{CMIP5}. </li>
+     <li> For Spatial displays we use the 800m NEX CMIP5 monthly projections downloaded from <a href="http://dataserver.nccs.nasa.gov"> the NCCS website </a> \cite{NEX}. </li>
+</ul>
+</ul>
+
+
+
+<h4> Non-spatial Displays </h4>
+<p>Several non-spatial displays are generated to highlight the trends and changes in historic data as well projections using the CMIP5 climate models.  When possible we allow options to compare CMIP5 model output to interpolated datasets such as PRISM for your region.  Unless otherwise noted, all data is clipped to the region of interest and then averaged over the entire study area to produce time series graphics.  All Data is a monthly summary thus average temperature is average monthly temperature, minimum temperature is minimum monthly temperature and so on.</p>  
+
+Seasons are broken down as follows:
+<ul>
+    <li> Winter = December, January, and February </li>
+    <li> Spring = March, April, and May </li>
+    <li> Summer = June, July, and August </li>
+    <li> Autumn =September, October, and November </li>
+</ul>
+
+<h4> Spatial Displays </h4>
+<p> By Default spatial displays for past data are generated using the most ap-
+propriate historic dataset (Usually PRISM) and projections are generated
+using the highest resolution available (NEX CMIP5). Default color scales
+are based on the recommendations of Kaye et. al. Functions of any available
+data can be produced with study area and state backgrounds added for large
+study areas. </p>
+</body>
+
+</html>
+
+<!--
+\begin{figure}[!htb]
+	\resizebox{\textwidth}{!}{
+		\includegraphics[width=5cm]{HistoricTrends}
+		}
+	 \label{fig:fig5}
+	 \caption{Annual Historic Line Plot  based on PRISM. Options are available for adding linear models fit as well as a lagging average}
+	\end{figure}	
+
+\begin{figure}[!htb]
+	\resizebox{\textwidth}{!}{
+		\includegraphics[width=6cm]{1950_to_1980_ChangeTable}
+		}
+	 \label{fig:fig5.01}
+	 \caption{Changes in average annual temperature and precipitation compared to a baseline period (1950 to 1980 by default).  For projections the mean and $\pm$ 2 standard deviations of all available models are given.  2020s are (2010 to 2029), 2040s are (2030 to 2049) and so on. Baseline Data used here is Maurer because this is what was used to bias correct the model projections}
+	\end{figure}	
+
+\begin{figure}[!htb]
+	\resizebox{\textwidth}{!}{
+		\includegraphics[width=6cm]{1895_to_1980_LMTable}
+		}
+	 \label{fig:fig5.1}
+	 \caption{Linear models fit summaries for a historic time period}
+	\end{figure}	
+
+\begin{figure}[!htb]
+	\resizebox{\textwidth}{!}{
+		\includegraphics[width=6cm]{1980_to_2012_LMTable}
+		}
+	 \label{fig:fig5.2}
+	 \caption{Linear model fit summaries for a recent time period}
+	\end{figure}	
+
+
+	
+\begin{figure}[!htb]
+	\resizebox{\textwidth}{!}{
+		\includegraphics[width=15cm]{Temp_1950_to_2100_EmissionsLine}
+		}
+	 \label{fig:fig2}
+	 \caption{Projections of mean annual temperature with a line for each model run these can be produced for a subset of emissions pathways and interpolated data for historic time can overlaid.  By default the projections are aggregated to year prior to plotting}
+	\end{figure}	
+
+\begin{figure}[!htb]
+	\resizebox{\textwidth}{!}{
+		\includegraphics[width=15cm]{Temp_1950_to_2100_EmissionsSD}
+		}
+	 \label{fig:fig25}
+	 \caption{Projections for annual temperature with mean,  25 and 75\% quantiles grouped by emissions scenario.}
+	\end{figure}
+
+\begin{figure}[!htb]
+	\resizebox{\textwidth}{!}{
+		\includegraphics[width=15cm]{RCP_rcp45_rcp85_Scatter}
+		}
+	 \label{fig:fig26}
+	 \caption{Graphics to show how the models fall in the warm/dry to hot/wet continuum the default uses only rcp45 and rcp85.}
+	\end{figure}
+	
+\begin{figure}[!htb]
+	\resizebox{\textwidth}{!}{
+		\includegraphics[width=15cm]{RCP_rcp26_rcp45_rcp60_rcp85_Scatter}
+		}
+	 \label{fig:fig27}
+	 \caption{Similar to the above but displaying the colors for all emissions pathways. }
+	\end{figure}
+	
+	
+\begin{figure}[!htb]
+	\resizebox{\textwidth}{!}{
+		\includegraphics[width=15cm]{Tmin_Baseline_1895_to_1980_Anomaly}
+		}
+	 \label{fig:fig3}
+	 \caption{Anomaly plot based on a user specified baseline period.}
+\end{figure}
+
+\begin{figure}[!htb]
+	\resizebox{\textwidth}{!}{
+		\includegraphics[width=15cm]{Tmin_Baseline_1895_to_1920_Anomaly}
+		}
+	 \label{fig:fig3}
+	 \caption{Anomaly plots using different baseline periods can be quite different.  Careful consideration of the baseline period that is relevant to the affected entity is critical.}
+\end{figure}
+	
+\begin{figure}[!htb]
+	\resizebox{\textwidth}{!}{
+		\includegraphics[width=15cm]{Tmin_1895_to_2012_GroupBy_season_Box}
+		}
+	 \label{fig:fig3.1}
+	 \caption{Box plots broken down seasonally with color intensity dictated by median values (the centeral line in each box).  Hinges or edges of the boxes are the first and third quartile and whiskers extend past the first and third quartile by $1.5 \times IQR$ see R documentation on standard boxplots for more details.}
+\end{figure}
+
+
+
+\begin{figure}[!htb]
+	\resizebox{\textwidth}{!}{
+		\includegraphics[width=15cm]{Tmin_1895_to_1980_season_BoxbyRCP}
+		}
+	 \label{fig:fig3.2}
+	 \caption{Box plots comparing projections under the various scenarios to a baseline calculated using observational data.  These are mainly intended to allow users to create tables describing how seasonal or monthly patterns are projected to change compared to current conditions}
+\end{figure}
+
+
+			
+\begin{figure}[!htb]
+	\resizebox{\textwidth}{!}{
+		\includegraphics[width=15cm]{ImagePlot}
+		}
+	 \label{fig:fig3.12}
+	 \caption{Image plot showing the normalized difference from a baseline period for each month and year.  The baseline is calculated monthly within the specified year range.  They pixels are normalized by month and colors range from $\pm 2.5 $ Standard deviations from the mean of the baseline period. }
+\end{figure}
+
+
+\section{Spatial Displays}
+By Default spatial displays for past data are generated using the most appropriate historic dataset (Usually PRISM) and projections are generated using the highest resolution available (NEX CMIP5).  Default color scales are based on the recommendations of Kaye et. al. Functions of any available data can be produced with study area and state backgrounds added for large study areas. 
+
+%fig1
+\begin{figure}[!htb]
+	\resizebox{\textwidth}{!}{
+		\includegraphics[width=25cm]{MapDefaltColors}
+		}
+	 \label{fig:fig1}
+	 \caption{This graphic depicts the default color scales that are used based on the map functions and quantities for which maps are produce.  Other customized color scales can be made available as needed.}
+
+	\end{figure} -->
+      
+<!--/div-->
