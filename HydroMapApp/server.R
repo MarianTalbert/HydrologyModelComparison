@@ -1,15 +1,22 @@
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output,session) {
- 
+  XYs <- reactiveValues(
+    Lat = latitude,
+    Lon = longitude
+  )
    output$myChart<-renderChart2({
    
     id<-input$Map_marker_click$id
     if(input$mapVar!="swe") id<-NULL
     Dat<-MonthlyByStation[MonthlyByStation$SiteName==id,]
-    Dat2Use<-data.frame(Response=as.vector(c(Dat$VIC407,Dat$VIC412,Dat$Sat,Dat$SNOTEL)),
-                        Month=as.numeric(rep(Dat$Month,times=ifelse(is.null(id),0,4))),
-                        Model=as.character(rep(c("VIC407","VIC412","Satellite","SNOTEL"),
+#     Dat2Use<-data.frame(Response=as.vector(c(Dat$VIC407,Dat$VIC412,Dat$Sat,Dat$SNOTEL)),
+#                         Month=as.numeric(rep(Dat$Month,times=ifelse(is.null(id),0,4))),
+#                         Model=as.character(rep(c("VIC407","VIC412","Satellite","SNOTEL"),
+#                                                each=ifelse(is.null(id),0,12))))
+    Dat2Use<-data.frame(Response=as.vector(c(Dat$VIC407,Dat$VIC412)),
+                        Month=as.numeric(rep(Dat$Month,times=ifelse(is.null(id),0,2))),
+                        Model=as.character(rep(c("VIC407","VIC412"),
                                                each=ifelse(is.null(id),0,12))))
             myPlot<-nPlot(Response~Month,data=Dat2Use,group="Model",
                           type = "lineChart")
@@ -20,6 +27,22 @@ shinyServer(function(input, output,session) {
   return(myPlot)
    
   })
+   observeEvent(input$Map_click,{
+     print("map")
+     browser()
+     rast<-MapLst()
+     #I think I need the actual VIC 4.0.7 and VIC 4.1.2 data here
+     #makes me feel like I should switch to a rasterstack
+     XYdat<-as.data.frame(cbind(X=input$Map_click$lng,Y=input$Map_click$lat))
+     XYs$vals<-c(extract(rast[[1]][[1]],XYdat),extract(rast[[2]][[1]],XYdat),
+                 extract(rast[[3]][[1]],XYdat),extract(rast[[4]][[1]],XYdat),
+                 extract(rast[[5]][[1]],XYdat),extract(rast[[6]][[1]],XYdat),
+                 extract(rast[[7]][[1]],XYdat),extract(rast[[8]][[1]],XYdat),
+                 extract(rast[[9]][[1]],XYdat),extract(rast[[10]][[1]],XYdat),
+                 extract(rast[[11]][[1]],XYdat),extract(rast[[12]][[1]],XYdat))
+    
+     data$clickedMarker <- NULL
+     print(data$clickedMarker)})
  
   #======================================	
   # create the map
@@ -82,12 +105,6 @@ shinyServer(function(input, output,session) {
                     opacity = input$mapTrans)
  })
 
- 
- observeEvent(input$Map_click,{
-   print("map")
-   browser()
-   data$clickedMarker <- NULL
-   print(data$clickedMarker)})
  observe({
    proxy<-leafletProxy("Map")
     id<-input$Map_marker_click$id
@@ -103,7 +120,7 @@ shinyServer(function(input, output,session) {
      Alph[ind]<-1
      if(input$mapVar!="swe")  Alph<-rep(0,times=length(longitude))
      
-     proxy%>%addCircleMarkers(lat = latitude, lng = longitude, radius = rad, 
+     proxy%>%addCircleMarkers(lat = XYs$Lat, lng = XYs$Lon, radius = rad, 
                               color=col,layerId=ids,opacity=Alph,fillOpacity = Alph)
    
  })
