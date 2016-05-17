@@ -3,59 +3,71 @@
 shinyServer(function(input, output,session) {
   XYs <- reactiveValues(
     Lat = latitude,
-    Lon = longitude
+    Lon = longitude,
+    clickedMarkerOrMap="Marker"
   )
-   output$myChart<-renderChart2({
-   
+
+  observeEvent(input$Map_marker_click,
+               {XYs$clickedMarkerOrMap <- "Marker"})
+  
+  observeEvent(input$Map_click,
+               {XYs$clickedMarkerOrMap <- "Map"})
+  
+  output$myChart<-renderChart2({
+  
+  if(XYs$clickedMarkerOrMap=="Map"){
+    #I think I need the actual VIC 4.0.7 and VIC 4.1.2 data here
+    #makes me feel like I should switch to a rasterstack
+    rast<-MapLst()
+      XYdat<-as.data.frame(cbind(X=input$Map_click$lng,Y=input$Map_click$lat))
+      VIC407<-c(extract(rast[[1]][[4]],XYdat),extract(rast[[2]][[4]],XYdat),
+                extract(rast[[3]][[4]],XYdat),extract(rast[[4]][[4]],XYdat),
+                extract(rast[[5]][[4]],XYdat),extract(rast[[6]][[4]],XYdat),
+                extract(rast[[7]][[4]],XYdat),extract(rast[[8]][[4]],XYdat),
+                extract(rast[[9]][[4]],XYdat),extract(rast[[10]][[4]],XYdat),
+                extract(rast[[11]][[4]],XYdat),extract(rast[[12]][[4]],XYdat))
+      VIC412<-c(extract(rast[[1]][[5]],XYdat),extract(rast[[2]][[5]],XYdat),
+                extract(rast[[3]][[5]],XYdat),extract(rast[[4]][[5]],XYdat),
+                extract(rast[[5]][[5]],XYdat),extract(rast[[6]][[5]],XYdat),
+                extract(rast[[7]][[5]],XYdat),extract(rast[[8]][[5]],XYdat),
+                extract(rast[[9]][[5]],XYdat),extract(rast[[10]][[5]],XYdat),
+                extract(rast[[11]][[5]],XYdat),extract(rast[[12]][[5]],XYdat))
+      
+      Dat2Use<-data.frame(Response=as.vector(c(VIC407,VIC412)),
+                          Month=as.numeric(rep(1:12,times=2)),
+                          Model=as.character(rep(c("VIC407","VIC412"),
+                                                 each=12)))
+      myPlot<-nPlot(Response~Month,data=Dat2Use,group="Model",
+                    type = "lineChart")
+      myPlot$yAxis(axisLabel="Snow Water Equivilant")
+      myPlot$chart(margin = list(left = 100))
+      myPlot$xAxis(axisLabel="Month")
+      return(myPlot)
+  }  else{
     id<-input$Map_marker_click$id
     if(input$mapVar!="swe") id<-NULL
     Dat<-MonthlyByStation[MonthlyByStation$SiteName==id,]
-#     Dat2Use<-data.frame(Response=as.vector(c(Dat$VIC407,Dat$VIC412,Dat$Sat,Dat$SNOTEL)),
-#                         Month=as.numeric(rep(Dat$Month,times=ifelse(is.null(id),0,4))),
-#                         Model=as.character(rep(c("VIC407","VIC412","Satellite","SNOTEL"),
-#                                                each=ifelse(is.null(id),0,12))))
-    Dat2Use<-data.frame(Response=as.vector(c(Dat$VIC407,Dat$VIC412)),
-                        Month=as.numeric(rep(Dat$Month,times=ifelse(is.null(id),0,2))),
-                        Model=as.character(rep(c("VIC407","VIC412"),
-                                               each=ifelse(is.null(id),0,12))))
-            myPlot<-nPlot(Response~Month,data=Dat2Use,group="Model",
-                          type = "lineChart")
-            myPlot$yAxis(axisLabel=paste("Snow Water Equivilant",id))
-            myPlot$chart(margin = list(left = 100))
-            myPlot$xAxis(axisLabel="Month")
-           
-  return(myPlot)
-   
+    if(input$showSS){
+        Dat2Use<-data.frame(Response=as.vector(c(Dat$VIC407,Dat$VIC412,Dat$Sat,Dat$SNOTEL)),
+                            Month=as.numeric(rep(Dat$Month,times=ifelse(is.null(id),0,4))),
+                            Model=as.character(rep(c("VIC407","VIC412","Satellite","SNOTEL"),
+                                                   each=ifelse(is.null(id),0,12))))
+    } else{
+        Dat2Use<-data.frame(Response=as.vector(c(Dat$VIC407,Dat$VIC412)),
+                            Month=as.numeric(rep(Dat$Month,times=ifelse(is.null(id),0,2))),
+                            Model=as.character(rep(c("VIC407","VIC412"),
+                                                   each=ifelse(is.null(id),0,12))))
+    }
+    myPlot<-nPlot(Response~Month,data=Dat2Use,group="Model",
+                  type = "lineChart")
+    myPlot$yAxis(axisLabel=paste("Snow Water Equivilant",id))
+    myPlot$chart(margin = list(left = 100))
+    myPlot$xAxis(axisLabel="Month")
+    return(myPlot)      
+  }                
+ 
   })
-   output$myChart2<-renderChart2({
-     rast<-MapLst()
-     #I think I need the actual VIC 4.0.7 and VIC 4.1.2 data here
-     #makes me feel like I should switch to a rasterstack
-     XYdat<-as.data.frame(cbind(X=input$Map_click$lng,Y=input$Map_click$lat))
-     VIC407<-c(extract(rast[[1]][[4]],XYdat),extract(rast[[2]][[4]],XYdat),
-                 extract(rast[[3]][[4]],XYdat),extract(rast[[4]][[4]],XYdat),
-                 extract(rast[[5]][[4]],XYdat),extract(rast[[6]][[4]],XYdat),
-                 extract(rast[[7]][[4]],XYdat),extract(rast[[8]][[4]],XYdat),
-                 extract(rast[[9]][[4]],XYdat),extract(rast[[10]][[4]],XYdat),
-                 extract(rast[[11]][[4]],XYdat),extract(rast[[12]][[4]],XYdat))
-     VIC412<-c(extract(rast[[1]][[5]],XYdat),extract(rast[[2]][[5]],XYdat),
-               extract(rast[[3]][[5]],XYdat),extract(rast[[4]][[5]],XYdat),
-               extract(rast[[5]][[5]],XYdat),extract(rast[[6]][[5]],XYdat),
-               extract(rast[[7]][[5]],XYdat),extract(rast[[8]][[5]],XYdat),
-               extract(rast[[9]][[5]],XYdat),extract(rast[[10]][[5]],XYdat),
-               extract(rast[[11]][[5]],XYdat),extract(rast[[12]][[5]],XYdat))
-     
-     Dat2Use<-data.frame(Response=as.vector(c(VIC407,VIC412)),
-                         Month=as.numeric(rep(1:12,times=2)),
-                         Model=as.character(rep(c("VIC407","VIC412"),
-                                                each=12)))
-     myPlot<-nPlot(Response~Month,data=Dat2Use,group="Model",
-                   type = "lineChart")
-     myPlot$yAxis(axisLabel="Snow Water Equivilant")
-     myPlot$chart(margin = list(left = 100))
-     myPlot$xAxis(axisLabel="Month")
-     return(myPlot)
-     })
+ 
  
   #======================================	
   # create the map

@@ -16,13 +16,13 @@ ui = fluidPage(
                                   October=10,November=11,December=12),
                      selected=13),
         sliderInput("mapTrans","Transparency", 0, 1,.8),
+        checkboxInput("showSS", label = "Show SNOTEL and Satellite data", 
+                      value = FALSE),
       width=2
     ),
     mainPanel(
       leafletOutput('Map'),
-      conditionalPanel(
-        condition = "input.Map_marker_click != 'NULL'",showOutput("myChart", "nvd3")),
-      showOutput("myChart2", "nvd3")
+      showOutput("myChart", "nvd3")
     )
    
   )

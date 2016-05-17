@@ -4,9 +4,9 @@ library(raster)
 library(rCharts)
 
 options(RCHART_LIB = 'polycharts')
-options(RCHART_WIDTH = 800,RCHART_HEIGHT = 400)
+options(RCHART_WIDTH = 800,RCHART_HEIGHT = 300)
 setwd("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\HydroCode")
-load("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics\\ShinyDat.RData")
+load("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics\\ShinyDatNew.RData")
 latitude<-as.numeric(MonthlyByStation$Lat[MonthlyByStation$Month==1])
 longitude<-as.numeric(MonthlyByStation$Lon[MonthlyByStation$Month==1])
 ids<-MonthlyByStation$SiteName[MonthlyByStation$Month==1]
