@@ -27,22 +27,35 @@ shinyServer(function(input, output,session) {
   return(myPlot)
    
   })
-   observeEvent(input$Map_click,{
-     print("map")
-     browser()
+   output$myChart2<-renderChart2({
      rast<-MapLst()
      #I think I need the actual VIC 4.0.7 and VIC 4.1.2 data here
      #makes me feel like I should switch to a rasterstack
      XYdat<-as.data.frame(cbind(X=input$Map_click$lng,Y=input$Map_click$lat))
-     XYs$vals<-c(extract(rast[[1]][[1]],XYdat),extract(rast[[2]][[1]],XYdat),
-                 extract(rast[[3]][[1]],XYdat),extract(rast[[4]][[1]],XYdat),
-                 extract(rast[[5]][[1]],XYdat),extract(rast[[6]][[1]],XYdat),
-                 extract(rast[[7]][[1]],XYdat),extract(rast[[8]][[1]],XYdat),
-                 extract(rast[[9]][[1]],XYdat),extract(rast[[10]][[1]],XYdat),
-                 extract(rast[[11]][[1]],XYdat),extract(rast[[12]][[1]],XYdat))
-    
-     data$clickedMarker <- NULL
-     print(data$clickedMarker)})
+     VIC407<-c(extract(rast[[1]][[4]],XYdat),extract(rast[[2]][[4]],XYdat),
+                 extract(rast[[3]][[4]],XYdat),extract(rast[[4]][[4]],XYdat),
+                 extract(rast[[5]][[4]],XYdat),extract(rast[[6]][[4]],XYdat),
+                 extract(rast[[7]][[4]],XYdat),extract(rast[[8]][[4]],XYdat),
+                 extract(rast[[9]][[4]],XYdat),extract(rast[[10]][[4]],XYdat),
+                 extract(rast[[11]][[4]],XYdat),extract(rast[[12]][[4]],XYdat))
+     VIC412<-c(extract(rast[[1]][[5]],XYdat),extract(rast[[2]][[5]],XYdat),
+               extract(rast[[3]][[5]],XYdat),extract(rast[[4]][[5]],XYdat),
+               extract(rast[[5]][[5]],XYdat),extract(rast[[6]][[5]],XYdat),
+               extract(rast[[7]][[5]],XYdat),extract(rast[[8]][[5]],XYdat),
+               extract(rast[[9]][[5]],XYdat),extract(rast[[10]][[5]],XYdat),
+               extract(rast[[11]][[5]],XYdat),extract(rast[[12]][[5]],XYdat))
+     
+     Dat2Use<-data.frame(Response=as.vector(c(VIC407,VIC412)),
+                         Month=as.numeric(rep(1:12,times=2)),
+                         Model=as.character(rep(c("VIC407","VIC412"),
+                                                each=12)))
+     myPlot<-nPlot(Response~Month,data=Dat2Use,group="Model",
+                   type = "lineChart")
+     myPlot$yAxis(axisLabel="Snow Water Equivilant")
+     myPlot$chart(margin = list(left = 100))
+     myPlot$xAxis(axisLabel="Month")
+     return(myPlot)
+     })
  
   #======================================	
   # create the map

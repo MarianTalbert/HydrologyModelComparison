@@ -21,7 +21,8 @@ ui = fluidPage(
     mainPanel(
       leafletOutput('Map'),
       conditionalPanel(
-        condition = "input.Map_marker_click != 'NULL'",showOutput("myChart", "nvd3"))
+        condition = "input.Map_marker_click != 'NULL'",showOutput("myChart", "nvd3")),
+      showOutput("myChart2", "nvd3")
     )
    
   )
