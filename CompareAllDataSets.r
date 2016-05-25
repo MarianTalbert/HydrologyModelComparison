@@ -9,7 +9,7 @@ cols<-wes_palettes$Cavalcanti[c(1,2,4,5)]
 
 i=1
 
-pdf("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics\\AllCurves.pdf")
+#pdf("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics\\AllCurves.pdf")
 par(mfrow=c(4,4),oma=c(0,1,5,0),mar=c(1,1,1,0))
 #eventually we'll have a for loop here
 count<-0 #count to tell me when to add a legend
@@ -34,7 +34,7 @@ for(i in 1:length(fileList)){
       month<-as.numeric(substr(snowDat$date2,6,7))
       snowDat<-data.frame(swe=snowDat$SWE,year=year,month=month)
       #keeping all the data in the same year range
-      snowDat<-snowDat[snowDat$year>=min(years) & snowDat$year<=max(years),]
+      #snowDat<-snowDat[snowDat$year>=min(years) & snowDat$year<=max(years),]
       #find that lat and lon
       lonInd<-which.min(abs(SnotelCoords$lon[i]-countryLon))
       latInd<-which.min(abs(SnotelCoords$lat[i]-countryLat))
@@ -71,10 +71,13 @@ for(i in 1:length(fileList)){
   count<-0
   }
 }
+
 dev.off()
 
  names(MonthlyByStation)<-c("VIC407","VIC412","Sat",
                             "SNOTEL","SiteName","Month","Lon","Lat")
+ MonthlyByStation<-na.omit(MonthlyByStation)
+#save(ShinyMapLst,MonthlyByStation,file=file.path(OutputGraphics,"ShinyDatNew.RData"))
 #============================================
 # pairs plot
 d<-annSums[complete.cases(annSums),]

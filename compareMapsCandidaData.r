@@ -56,9 +56,14 @@ for(v in 1:length(Vars)){
                      Lon <- ncvar_get(Clim,lonName[p])
                      OutputImg <- matrix(data=0,nrow=length(Lon),ncol=length(Lat))
                   }
+
                    RastArray <- ncvar_get(Clim, varid=VarNames, start=c(1,1,m),
                                count=c(length(Lon),length(Lat),1))
 
+                     image.plot(RastArray)
+
+
+                   print(yr)
                    #average over space and add to the time series
                     OutputImg <- OutputImg+RastArray
                    nc_close(Clim)
@@ -191,7 +196,8 @@ for(v in 1:length(Vars)){
            myImagePlot(MonthlyDiff,plotLabels[v],"(VIC 4.0.7 + 10)/(Satellite+10)","CMIP3Satellite",m,breakRng,Breaks,countryLat,countryLon,
               OutputGraphics,Colors,SnowSites,LogToAbs=TRUE)
         }
-
+       OutputLst[[m]]$vic407<-convertToRaster(vic407[[m]],countryLon,countryLat,RastType="GTiff")
+       OutputLst[[m]]$vic412<-convertToRaster(vic412[[m]],countryLon,countryLat,RastType="GTiff")
     }
 
     #Annual summaries of all the datasets

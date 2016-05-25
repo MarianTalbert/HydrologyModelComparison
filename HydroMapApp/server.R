@@ -6,7 +6,7 @@ shinyServer(function(input, output,session) {
     Lon = longitude,
     clickedMarkerOrMap="Marker"
   )
-
+  
   observeEvent(input$Map_marker_click,
                {XYs$clickedMarkerOrMap <- "Marker"})
   
@@ -19,19 +19,22 @@ shinyServer(function(input, output,session) {
     #I think I need the actual VIC 4.0.7 and VIC 4.1.2 data here
     #makes me feel like I should switch to a rasterstack
     rast<-MapLst()
+    v407ind<-ifelse(input$mapVar=="swe",4,2)
+    v412ind<-ifelse(input$mapVar=="swe",5,3)
       XYdat<-as.data.frame(cbind(X=input$Map_click$lng,Y=input$Map_click$lat))
-      VIC407<-c(extract(rast[[1]][[4]],XYdat),extract(rast[[2]][[4]],XYdat),
-                extract(rast[[3]][[4]],XYdat),extract(rast[[4]][[4]],XYdat),
-                extract(rast[[5]][[4]],XYdat),extract(rast[[6]][[4]],XYdat),
-                extract(rast[[7]][[4]],XYdat),extract(rast[[8]][[4]],XYdat),
-                extract(rast[[9]][[4]],XYdat),extract(rast[[10]][[4]],XYdat),
-                extract(rast[[11]][[4]],XYdat),extract(rast[[12]][[4]],XYdat))
-      VIC412<-c(extract(rast[[1]][[5]],XYdat),extract(rast[[2]][[5]],XYdat),
-                extract(rast[[3]][[5]],XYdat),extract(rast[[4]][[5]],XYdat),
-                extract(rast[[5]][[5]],XYdat),extract(rast[[6]][[5]],XYdat),
-                extract(rast[[7]][[5]],XYdat),extract(rast[[8]][[5]],XYdat),
-                extract(rast[[9]][[5]],XYdat),extract(rast[[10]][[5]],XYdat),
-                extract(rast[[11]][[5]],XYdat),extract(rast[[12]][[5]],XYdat))
+      VIC407<-c(extract(rast[[1]][[v407ind]],XYdat),extract(rast[[2]][[v407ind]],XYdat),
+                extract(rast[[3]][[v407ind]],XYdat),extract(rast[[4]][[v407ind]],XYdat),
+                extract(rast[[5]][[v407ind]],XYdat),extract(rast[[6]][[v407ind]],XYdat),
+                extract(rast[[7]][[v407ind]],XYdat),extract(rast[[8]][[v407ind]],XYdat),
+                extract(rast[[9]][[v407ind]],XYdat),extract(rast[[10]][[v407ind]],XYdat),
+                extract(rast[[11]][[v407ind]],XYdat),extract(rast[[12]][[v407ind]],XYdat))
+      
+      VIC412<-c(extract(rast[[1]][[v412ind]],XYdat),extract(rast[[2]][[v412ind]],XYdat),
+                extract(rast[[3]][[v412ind]],XYdat),extract(rast[[4]][[v412ind]],XYdat),
+                extract(rast[[5]][[v412ind]],XYdat),extract(rast[[6]][[v412ind]],XYdat),
+                extract(rast[[7]][[v412ind]],XYdat),extract(rast[[8]][[v412ind]],XYdat),
+                extract(rast[[9]][[v412ind]],XYdat),extract(rast[[10]][[v412ind]],XYdat),
+                extract(rast[[11]][[v412ind]],XYdat),extract(rast[[12]][[v412ind]],XYdat))
       
       Dat2Use<-data.frame(Response=as.vector(c(VIC407,VIC412)),
                           Month=as.numeric(rep(1:12,times=2)),
@@ -138,16 +141,30 @@ shinyServer(function(input, output,session) {
      Lat<-as.numeric((MonthlyByStation[MonthlyByStation$SiteName==id,8])[1])
      ind<-which((latitude==Lat & longitude==Lon),arr.ind=TRUE) 
      col<-rep("black",times=length(longitude))
-     rad<-rep(.1,times=length(longitude))
+     rad<-rep(.5,times=length(longitude))
      Alph<-rep(.3,times=length(longitude))
-     col[ind]<-"red"
-     rad[ind]<-5
-     Alph[ind]<-1
+     
      if(input$mapVar!="swe")  Alph<-rep(0,times=length(longitude))
      
      proxy%>%addCircleMarkers(lat = XYs$Lat, lng = XYs$Lon, radius = rad, 
                               color=col,layerId=ids,opacity=Alph,fillOpacity = Alph)
    
+ })
+
+ observe({
+   if(XYs$clickedMarkerOrMap=="Map"){
+     proxy<-leafletProxy("Map")
+     proxy%>%addCircleMarkers(lat=input$Map_click$lat,lng=input$Map_click$lng,col="red",
+                        radius=3,opacity=1,layerId="2")
+   }
+   if(XYs$clickedMarkerOrMap=="Marker"){
+     if(!is.null(input$Map_marker_click)){
+     proxy<-leafletProxy("Map")
+     proxy%>%addCircleMarkers(lat=input$Map_marker_click$lat,
+                              lng=input$Map_marker_click$lng,col="red",
+                              radius=3,opacity=1,layerId="2")
+     }
+   }
  })
  
 })   

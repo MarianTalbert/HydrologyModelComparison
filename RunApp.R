@@ -13,7 +13,8 @@ ids<-MonthlyByStation$SiteName[MonthlyByStation$Month==1]
 
 
 runApp("HydroMapApp")
-runApp("ClickOnPoints")
+
++runApp("ClickOnPoints")
 blueCols<-rev(c(colorRampPalette(c("blue","grey96"))(10),
           "grey96"))
 redCols<-rev(c(colorRampPalette(c("red4","grey96"))(10),"grey96"))
