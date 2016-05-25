@@ -6,7 +6,7 @@ library(rCharts)
 options(RCHART_LIB = 'polycharts')
 options(RCHART_WIDTH = 800,RCHART_HEIGHT = 300)
 setwd("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\HydroCode")
-load("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics\\ShinyDatNew.RData")
+load("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics\\ShinyDatNewStacks.RData")
 latitude<-as.numeric(MonthlyByStation$Lat[MonthlyByStation$Month==1])
 longitude<-as.numeric(MonthlyByStation$Lon[MonthlyByStation$Month==1])
 ids<-MonthlyByStation$SiteName[MonthlyByStation$Month==1]
@@ -14,7 +14,7 @@ ids<-MonthlyByStation$SiteName[MonthlyByStation$Month==1]
 
 runApp("HydroMapApp")
 
-+runApp("ClickOnPoints")
+runApp("ClickOnPoints")
 blueCols<-rev(c(colorRampPalette(c("blue","grey96"))(10),
           "grey96"))
 redCols<-rev(c(colorRampPalette(c("red4","grey96"))(10),"grey96"))

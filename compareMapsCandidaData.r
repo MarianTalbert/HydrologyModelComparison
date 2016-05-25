@@ -25,7 +25,7 @@ cmip3mo = "E:\\ClimateCache\\GDO\\BCSD\\ftp_mirror\\gdo-dcp.ucllnl.org\\pub\\dcp
 cmip3pnw = "E:\\ClimateCache\\GDO\\BCSD\\ftp_mirror\\gdo-dcp.ucllnl.org\\pub\\dcp\\archive\\wwcra\\monthly_observed\\pnw\\obs.maurer_2002.pnw.monthly",
 cmip3riog = "E:\\ClimateCache\\GDO\\BCSD\\ftp_mirror\\gdo-dcp.ucllnl.org\\pub\\dcp\\archive\\wwcra\\monthly_observed\\riog\\obs.maurer_2002.riog.monthly")
  Vars<-"swe"
- v=1
+
  #===============================================
  #           getting the cmip3 data cmip5 is also in here but much shorter
  #===============================================
@@ -48,7 +48,6 @@ for(v in 1:length(Vars)){
        for(m in 1:12){
            for(yr in years){
                filePath <- paste(Paths[p],yr,".nc",sep="")
-
                Clim <- nc_open(filePath)
 
                    if(yr==years[1]){ #do this for the first year only because it takes a bit to caluclate
@@ -60,11 +59,6 @@ for(v in 1:length(Vars)){
                    RastArray <- ncvar_get(Clim, varid=VarNames, start=c(1,1,m),
                                count=c(length(Lon),length(Lat),1))
 
-                     image.plot(RastArray)
-
-
-                   print(yr)
-                   #average over space and add to the time series
                     OutputImg <- OutputImg+RastArray
                    nc_close(Clim)
             }
@@ -80,7 +74,11 @@ for(v in 1:length(Vars)){
        countryLat<- ncvar_get(Clim,latName[p])
        countryLon <- ncvar_get(Clim,lonName[p])
        nc_close(Clim)
-
+       
+    #=================================================
+    # for VIC 4.0.7 the data is broken down by watershed and
+    # must be merged back together
+    
      for(p in 2:length(Paths)){
        filePath <- paste(Paths[p],yr,".nc",sep="")
        Clim <- nc_open(filePath)
@@ -128,8 +126,7 @@ for(v in 1:length(Vars)){
                            OutputImg <- array(data=0,c(length(years),length(satLon),ncol=length(satLat)))
                         }
                  ind<-as.vector(which(as.character(Time)==paste(years[yr],ifelse(m<10,"0",""),m,sep=""),arr.ind=TRUE))
-                 print(paste(years[yr],ifelse(m<10,"0",""),m,sep=""))
-                 print(ind)
+
                    RastArray<-ncvar_get(Clim,varid="swe",start=c(1,1,ind),
                                      count=c(length(satLon),length(satLat),1))
                     OutputImg[yr,,] <- RastArray
@@ -146,8 +143,9 @@ for(v in 1:length(Vars)){
     #==============================================
     #       vic412 was the CMIP5 model output
     #==============================================
-    vic412<-ImgLst[[1]]
-
+     vic412<-ImgLst[[1]]
+    #vic412<-stack(lapply(ImgLst[[1]],FUN=convertToRaster,Lon=countryLon,Lat=countryLat,RastType="GTiff"))
+    #vic407<-stack(lapply(vic407,FUN=convertToRaster,Lon=countryLon,Lat=countryLat,RastType="GTiff"))
     #==============================================
     #          now calculating the ratios
     #==============================================
@@ -157,11 +155,12 @@ for(v in 1:length(Vars)){
         Breaks<-seq(from=-r,to=r,length=length(Colors)+1)
 
     OutputLst<-list()
+
     for(m in 1:12){
         #==============================
         #plotting the three ratios both log and nonlog scale non log I take the greater of the exp(log(ratio)) and add a sign
         #to indicate which was greater
-      OutputLst[[m]]<-list()
+
       #=========
        # Vic412 vs Vic407
        MonthlyDiff<-log((vic412[[m]]+10)/(vic407[[m]]+10))
@@ -170,7 +169,8 @@ for(v in 1:length(Vars)){
         MonthlyDiff[MonthlyDiff>max(breakRng)]<-max(breakRng)
        myImagePlot(MonthlyDiff,plotLabels[v],"(VIC 4.1.2 + 10)/(VIC 4.0.7 + 10)","CMIP5CMIP3",m,breakRng,Breaks,countryLat,
          countryLon,OutputGraphics,Colors,SnowSites,LogToAbs=TRUE)
-       OutputLst[[m]]$vic412vic407<-convertToRaster(MonthlyDiff,countryLon,countryLat,RastType="GTiff")
+       if(m==1) OutputLst$vic412vic407<-stack(convertToRaster(MonthlyDiff,countryLon,countryLat,RastType="GTiff"))
+       else OutputLst$vic412vic407<-addLayer(OutputLst$vic412vic407,convertToRaster(MonthlyDiff,countryLon,countryLat,RastType="GTiff"))
 
        #========================
        #for swe only
@@ -183,7 +183,9 @@ for(v in 1:length(Vars)){
            myImagePlot(MonthlyDiff,plotLabels[v],"(VIC 4.1.2 + 10)/(Satellite+10)","CMIP5Satellite",m,breakRng,
               Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites,LogToAbs=TRUE)
 
-           OutputLst[[m]]$vic412Sat<-convertToRaster(MonthlyDiff,countryLon,countryLat,RastType="GTiff")
+            if(m==1) OutputLst$vic412Sat<-stack(convertToRaster(MonthlyDiff,countryLon,countryLat,RastType="GTiff"))
+            else OutputLst$vic412Sat<-addLayer(OutputLst$vic412Sat,convertToRaster(MonthlyDiff,countryLon,countryLat,RastType="GTiff"))
+
            #Satellite data is recorded mid month so maybe we should compare to the mean of this month and next month in the VICs
            #this actually did much worse for some reason so I've removed it...
 
@@ -192,30 +194,39 @@ for(v in 1:length(Vars)){
            MonthlyDiff<-log((vic407[[m]]+10)/(monthlySatellite[[m]][2:(nrow(monthlySatellite[[m]])-1),2:(ncol(monthlySatellite[[m]])-1)]+10))
                MonthlyDiff[MonthlyDiff<min(breakRng)]<-min(breakRng)
                MonthlyDiff[MonthlyDiff>max(breakRng)]<-max(breakRng)
-           OutputLst[[m]]$vic407Sat<-convertToRaster(MonthlyDiff,countryLon,countryLat,RastType="GTiff")
+           if(m==1) OutputLst$vic407Sat<-stack(convertToRaster(MonthlyDiff,countryLon,countryLat,RastType="GTiff"))
+            else OutputLst$vic407Sat<-addLayer(OutputLst$vic407Sat,convertToRaster(MonthlyDiff,countryLon,countryLat,RastType="GTiff"))
            myImagePlot(MonthlyDiff,plotLabels[v],"(VIC 4.0.7 + 10)/(Satellite+10)","CMIP3Satellite",m,breakRng,Breaks,countryLat,countryLon,
               OutputGraphics,Colors,SnowSites,LogToAbs=TRUE)
         }
-       OutputLst[[m]]$vic407<-convertToRaster(vic407[[m]],countryLon,countryLat,RastType="GTiff")
-       OutputLst[[m]]$vic412<-convertToRaster(vic412[[m]],countryLon,countryLat,RastType="GTiff")
+        if(m==1) OutputLst$vic407<-stack(convertToRaster(vic407[[m]],countryLon,countryLat,RastType="GTiff"))
+            else OutputLst$vic407<-addLayer(OutputLst$vic407,convertToRaster(vic407[[m]],countryLon,countryLat,RastType="GTiff"))
+
+        if(m==1) OutputLst$vic412<-stack(convertToRaster(vic412[[m]],countryLon,countryLat,RastType="GTiff"))
+            else OutputLst$vic412<-addLayer(OutputLst$vic412,convertToRaster(vic412[[m]],countryLon,countryLat,RastType="GTiff"))
     }
 
     #Annual summaries of all the datasets
     VIC412AnnSumRast<-Reduce("+",vic412)
+      OutputLst$vic412<-addLayer(OutputLst$vic412,convertToRaster(Reduce("+",vic412),
+            countryLon,countryLat,RastType="GTiff")
+      )
     VIC407AnnSumRast<-Reduce("+",vic407)
-
+      OutputLst$vic407<-addLayer(OutputLst$vic407,convertToRaster(Reduce("+",vic407),
+             countryLon,countryLat,RastType="GTiff")
+      )
 
      #=========================
      # and now do the annual
-     OutputLst[[13]]<-list()
     AnnualSumRast<-log((VIC412AnnSumRast+50)/(VIC407AnnSumRast+50))
+
        AnnualSumRast[AnnualSumRast<min(breakRng)]<-min(breakRng)
        AnnualSumRast[AnnualSumRast>max(breakRng)]<-max(breakRng)
        
      myImagePlot(AnnualSumRast,plotLabels[v],"log((VIC 4.1.2 + 50)/(VIC 4.0.7 + 50))","CMIP5CMIP3Annual",m=0,breakRng,
           Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites,LogToAbs=TRUE)
-    OutputLst[[13]]$vic412vic407<-convertToRaster(AnnualSumRast,countryLon,countryLat,RastType="GTiff")
-
+        OutputLst$vic412vic407<-addLayer(OutputLst$vic412vic407,convertToRaster(AnnualSumRast,countryLon,countryLat,RastType="GTiff"))
+        
     if(Vars[v]=="swe"){
         SateliteAnnSumRast<-Reduce("+",monthlySatellite)[2:(nrow(monthlySatellite[[m]])-1),2:(ncol(monthlySatellite[[m]])-1)]
          AnnualSumRast<-log((VIC412AnnSumRast+50)/(SateliteAnnSumRast+50))
@@ -223,15 +234,14 @@ for(v in 1:length(Vars)){
              AnnualSumRast[AnnualSumRast>max(breakRng)]<-max(breakRng)
          myImagePlot(AnnualSumRast,plotLabels[v],"log((VIC 4.1.2 + 50)/(Satellite + 50))","CMIP5CSatelliteAnnual",m=0,breakRng,
               Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites,LogToAbs=TRUE)
-        OutputLst[[13]]$vic412Sat<-convertToRaster(AnnualSumRast,countryLon,countryLat,RastType="GTiff")
-
+        OutputLst$vic412Sat<-addLayer(OutputLst$vic412Sat,convertToRaster(AnnualSumRast,countryLon,countryLat,RastType="GTiff"))
         AnnualSumRast<-log((VIC407AnnSumRast+50)/(SateliteAnnSumRast+50))
             AnnualSumRast[AnnualSumRast<min(breakRng)]<-min(breakRng)
             AnnualSumRast[AnnualSumRast>max(breakRng)]<-max(breakRng)
             
          myImagePlot(AnnualSumRast,plotLabels[v],"log((VIC 4.1.2 + 50)/(Satellite + 50))","CMIP3SatelliteAnnual",m=0,breakRng,
               Breaks,countryLat,countryLon,OutputGraphics,Colors,SnowSites,LogToAbs=TRUE)
-        OutputLst[[13]]$vic407Sat<-convertToRaster(AnnualSumRast,countryLon,countryLat,RastType="GTiff")
+        OutputLst$vic407Sat<-addLayer(OutputLst$vic407Sat,convertToRaster(AnnualSumRast,countryLon,countryLat,RastType="GTiff"))
     }
     ShinyMapLst[[v]]<-OutputLst
 }

@@ -18,28 +18,27 @@ shinyServer(function(input, output,session) {
   if(XYs$clickedMarkerOrMap=="Map"){
     #I think I need the actual VIC 4.0.7 and VIC 4.1.2 data here
     #makes me feel like I should switch to a rasterstack
+    
     rast<-MapLst()
     v407ind<-ifelse(input$mapVar=="swe",4,2)
     v412ind<-ifelse(input$mapVar=="swe",5,3)
+   
       XYdat<-as.data.frame(cbind(X=input$Map_click$lng,Y=input$Map_click$lat))
-      VIC407<-c(extract(rast[[1]][[v407ind]],XYdat),extract(rast[[2]][[v407ind]],XYdat),
-                extract(rast[[3]][[v407ind]],XYdat),extract(rast[[4]][[v407ind]],XYdat),
-                extract(rast[[5]][[v407ind]],XYdat),extract(rast[[6]][[v407ind]],XYdat),
-                extract(rast[[7]][[v407ind]],XYdat),extract(rast[[8]][[v407ind]],XYdat),
-                extract(rast[[9]][[v407ind]],XYdat),extract(rast[[10]][[v407ind]],XYdat),
-                extract(rast[[11]][[v407ind]],XYdat),extract(rast[[12]][[v407ind]],XYdat))
+      VIC407<-as.vector(extract(rast[[v407ind]],XYdat))[1:12]
+      VIC412<-as.vector(extract(rast[[v412ind]],XYdat))[1:12]
+      Response=c(VIC407,VIC412)
+      Model<-rep(c("VIC407","VIC412"),each=12)
       
-      VIC412<-c(extract(rast[[1]][[v412ind]],XYdat),extract(rast[[2]][[v412ind]],XYdat),
-                extract(rast[[3]][[v412ind]],XYdat),extract(rast[[4]][[v412ind]],XYdat),
-                extract(rast[[5]][[v412ind]],XYdat),extract(rast[[6]][[v412ind]],XYdat),
-                extract(rast[[7]][[v412ind]],XYdat),extract(rast[[8]][[v412ind]],XYdat),
-                extract(rast[[9]][[v412ind]],XYdat),extract(rast[[10]][[v412ind]],XYdat),
-                extract(rast[[11]][[v412ind]],XYdat),extract(rast[[12]][[v412ind]],XYdat))
+      if(input$mapVar=="swe"){
+        UWhydro<-as.vector(extract(rast[[6]],XYdat))[1:12] 
+        Response<-c(Response,UWhydro)
+        Model=c(Model,rep("UWhydro",times=12))
+        }
+      Dat2Use<-data.frame(Response=as.vector(Response),
+                          Month=rep(1:12,times=ifelse(input$mapVar=="swe",3,2)),
+                          Model=Model)
       
-      Dat2Use<-data.frame(Response=as.vector(c(VIC407,VIC412)),
-                          Month=as.numeric(rep(1:12,times=2)),
-                          Model=as.character(rep(c("VIC407","VIC412"),
-                                                 each=12)))
+      
       myPlot<-nPlot(Response~Month,data=Dat2Use,group="Model",
                     type = "lineChart")
       myPlot$yAxis(axisLabel="Snow Water Equivilant")
@@ -126,9 +125,10 @@ shinyServer(function(input, output,session) {
                       na.color = "transparent")
    palblue <- colorBin(blueCols,domain=c(exp(0),exp(1.2)))
    palred <- colorBin(redCols,domain=c(exp(0),exp(1.2)))
+   
    proxy<-leafletProxy("Map")
    proxy %>%
-     addRasterImage(dataset[[TimePeriod]][[RcpChoice]],
+     addRasterImage(dataset[[RcpChoice]][[TimePeriod]],
                     colors = pal, 
                     opacity = input$mapTrans)
  })
