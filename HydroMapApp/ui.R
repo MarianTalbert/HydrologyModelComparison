@@ -1,5 +1,6 @@
 
-ui = fluidPage(
+ui = navbarPage("VIC Model Comparison",
+  tabPanel("Explore Data",
   h4("Comparing Hydrology Model Output"),
   sidebarLayout(
     sidebarPanel(
@@ -26,4 +27,10 @@ ui = fluidPage(
     )
    
   )
-)
+),
+tabPanel("Explanation",
+         mainPanel(
+           includeHTML("include.html")
+         )
+         )
+  )

@@ -50,9 +50,9 @@ shinyServer(function(input, output,session) {
     if(input$mapVar!="swe") id<-NULL
     Dat<-MonthlyByStation[MonthlyByStation$SiteName==id,]
     if(input$showSS){
-        Dat2Use<-data.frame(Response=as.vector(c(Dat$VIC407,Dat$VIC412,Dat$Sat,Dat$SNOTEL)),
-                            Month=as.numeric(rep(Dat$Month,times=ifelse(is.null(id),0,4))),
-                            Model=as.character(rep(c("VIC407","VIC412","Satellite","SNOTEL"),
+        Dat2Use<-data.frame(Response=as.vector(c(Dat$VIC407,Dat$VIC412,Dat$Sat,Dat$SNOTEL,Dat$UW)),
+                            Month=as.numeric(rep(Dat$Month,times=ifelse(is.null(id),0,5))),
+                            Model=as.character(rep(c("VIC407","VIC412","Satellite","SNOTEL","Univ Wash"),
                                                    each=ifelse(is.null(id),0,12))))
     } else{
         Dat2Use<-data.frame(Response=as.vector(c(Dat$VIC407,Dat$VIC412)),
@@ -137,11 +137,12 @@ shinyServer(function(input, output,session) {
    proxy<-leafletProxy("Map")
     id<-input$Map_marker_click$id
      station<-MonthlyByStation$SiteName
-     Lon<-as.numeric((MonthlyByStation[MonthlyByStation$SiteName==id,7])[1])
-     Lat<-as.numeric((MonthlyByStation[MonthlyByStation$SiteName==id,8])[1])
+    
+     Lon<-as.numeric((MonthlyByStation$Lon[MonthlyByStation$SiteName==id])[1])
+     Lat<-as.numeric((MonthlyByStation$Lat[MonthlyByStation$SiteName==id])[1])
      ind<-which((latitude==Lat & longitude==Lon),arr.ind=TRUE) 
      col<-rep("black",times=length(longitude))
-     rad<-rep(.5,times=length(longitude))
+     rad<-rep(1,times=length(longitude))
      Alph<-rep(.3,times=length(longitude))
      
      if(input$mapVar!="swe")  Alph<-rep(0,times=length(longitude))
