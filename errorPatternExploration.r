@@ -3,10 +3,74 @@
     # looking at what's causing the error with interactions
     # exp(AnnualError)==1 is a match between the two
     #added 25 to annual 
-    ggplot(ErrorByElev,aes(x=Elev,y=exp(AnnualError),color=Snotel))+geom_point(size=.1,
+    
+ load("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics/ggplotExplore")
+ library(ggplot2)
+     ggplot(ErrorByElev,aes(x=DistToSnotel,y=exp(AnnualError),color=Snotel))+geom_point(size=.1,
     alpha=.1)+geom_smooth(size=1.2)+
        scale_color_manual(values=c("lightsteelblue","blue4"))+
          theme_bw()+coord_cartesian(ylim=c(.25,1.77))+
+         theme(axis.text=element_text(size=18),
+                axis.title=element_text(size=20,face="bold"),
+                plot.title=element_text(size=20,face="bold"),
+                legend.title=element_text(size=24),
+                legend.text=element_text(size=18))
+          plot.background = element_blank()
+         ,panel.grid.major = element_blank()
+         ,panel.grid.minor = element_blank()
+         ,panel.border = element_blank())+xlab("Elevation")+ylab("exp(Absolute Annual Error)")+
+         theme(axis.line = element_line(color = 'black'))
+
+    png(file.path(OutputGraphics,"ErrorByElevandLat.png"), width=8, height=6, res=400, units="in")
+    ggplot(ErrorByElev,aes(x=Lat,y=Elev,color=abs(AnnualError)))+geom_point(size=2.5,
+    alpha=.2)+scale_color_gradientn(colors=rev(inferno(20)),name="abs(Annual \nError)")+
+         theme_bw()+ theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=15,face="bold"),
+                plot.title=element_text(size=15,face="bold"),
+                legend.title=element_text(size=10),
+                legend.text=element_text(size=10),
+          plot.background = element_blank()
+         ,panel.grid.major = element_blank()
+         ,panel.grid.minor = element_blank()
+         ,panel.border = element_blank())+
+         theme(axis.line = element_line(color = 'black'))+xlab("Latitude")+ylab("Elevation in Meters")
+     dev.off()
+     
+    png(file.path(OutputGraphics,"ErrorByDistanceToSnotelandLat.png"), width=8, height=6, res=400, units="in")
+    ggplot(ErrorByElev,aes(x=DistToSnotel,y=abs(AnnualError),colour=Lat))+geom_point(size=1.5,
+    alpha=.1)+geom_smooth(size=1.2)+ coord_cartesian(ylim=c(.0,.3))+xlab("Distance to SNOTEL")+ylab("abs(Annual Error)")+
+         theme_bw()+scale_color_gradientn(colors=rev(inferno(20)))+
+         theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=15,face="bold"),
+                plot.title=element_text(size=15,face="bold"),
+                legend.title=element_text(size=10),
+          plot.background = element_blank()
+         ,panel.grid.major = element_blank()
+         ,panel.grid.minor = element_blank()
+         ,panel.border = element_blank())+
+         theme(axis.line = element_line(color = 'black'))
+     dev.off()
+     
+     
+png(file.path(OutputGraphics,"ErrorByDistanceToSnotelandLat2.png"), width=8, height=6, res=400, units="in")
+    ggplot(ErrorByElev,aes(y=DistToSnotel,x=Lat,colour=abs(AnnualError)))+geom_point(size=2.15,
+    alpha=.3)+ ylab("Distance to SNOTEL")+xlab("Latitude")+
+         theme_bw()+scale_color_gradientn(colors=rev(inferno(20)),name="abs(Annual \nError)")+
+         theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=15,face="bold"),
+                plot.title=element_text(size=15,face="bold"),
+                legend.title=element_text(size=10),
+          plot.background = element_blank()
+         ,panel.grid.major = element_blank()
+         ,panel.grid.minor = element_blank()
+         ,panel.border = element_blank())+
+         theme(axis.line = element_line(color = 'black'))
+     dev.off()
+     
+    ggplot(ErrorByElev,aes(x=Elev,y=abs(AnnualError),color=Lat))+geom_point(size=2.3,
+    alpha=.1)+geom_smooth(size=1.2)+facet_wrap(~Snotel)+
+       scale_color_gradientn(colors=(inferno(20)))+
+         theme_bw()+coord_cartesian(ylim=c(0,.4))+
          theme(
           plot.background = element_blank()
          ,panel.grid.major = element_blank()
@@ -14,7 +78,13 @@
          ,panel.border = element_blank())+xlab("Elevation")+ylab("exp(Absolute Annual Error)")+
          theme(axis.line = element_line(color = 'black'))
          
-    ggplot(ErrorByElev,aes(x=Elev,y=exp(AnnualError),color=Lat))+geom_point(size=1.2,alpha=.1)+geom_smooth()+
+         
+    aggregate(abs(ErrorByElev$AnnualError),FUN=median,by=list(Snotel=ErrorByElev$Snotel))
+    
+    ggplot(ErrorByElev, aes(AnnualError)) + geom_histogram()+ facet_wrap(~Snotel)+theme_bw()
+    ggplot(ErrorByElev, aes(Lat)) + geom_histogram()+ facet_wrap(~Snotel)+theme_bw()
+    ggplot(ErrorByElev, aes(Elev)) + geom_histogram()+ facet_wrap(~Snotel)+theme_bw()
+    ggplot(ErrorByElev,aes(x=Elev,y=exp(AnnualError),color=Lat))+geom_point(size=1.2,alpha=.05)+geom_smooth()+
        scale_color_gradientn(colors=rev(viridis(20)))+
        theme_bw()+coord_cartesian(ylim=c(.25,1.77))+   #coord_cartesian(ylim(as.vector(c(0,quantile(exp(ErrorByElev$AbsAnnError),.97)))))
          theme(
