@@ -33,7 +33,7 @@ r<-t(UWhydro[[1]])
        crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")))
 ShinyMapLst[[1]]$UWhydro<-UWhydroStk
 ShinyMapLst[[1]]$Satellite<-Satellite
-
+save(ShinyMapLst,countryLat,countryLon,file=file.path(OutputGraphics,"ShinyDatNewNewStacks.RData"))
 
 #ShinyMapLst[[1]][[6]]<-UWhydro
 

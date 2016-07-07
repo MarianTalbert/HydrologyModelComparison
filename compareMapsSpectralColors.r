@@ -8,7 +8,7 @@ source("C:\\GoogleDrive\\Climate\\Rcode\\my.filled.contour.r")
 OutputGraphics<-"C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics2"
 latName <- c("latitude",rep("lat",times=8))
 lonName <- c("longitude",rep("lon",times=8))
-years <- 1950:1999
+years <- 1988:1999
 ImgLst <- list() 
 
 BasePaths=c(cmip5Obs = "E:\\ClimateCache\\GDO\\BCSD\\ftp_mirror\\gdo-dcp.ucllnl.org\\pub\\dcp\\archive\\cmip5\\hydro\\historical_mon_VIC\\conus_c5.para_v0.monthly",
@@ -19,9 +19,9 @@ cmip3gulf = "E:\\ClimateCache\\GDO\\BCSD\\ftp_mirror\\gdo-dcp.ucllnl.org\\pub\\d
 cmip3mo = "E:\\ClimateCache\\GDO\\BCSD\\ftp_mirror\\gdo-dcp.ucllnl.org\\pub\\dcp\\archive\\wwcra\\monthly_observed\\mo\\obs.maurer_2002.mo.monthly",
 cmip3pnw = "E:\\ClimateCache\\GDO\\BCSD\\ftp_mirror\\gdo-dcp.ucllnl.org\\pub\\dcp\\archive\\wwcra\\monthly_observed\\pnw\\obs.maurer_2002.pnw.monthly",
 cmip3riog = "E:\\ClimateCache\\GDO\\BCSD\\ftp_mirror\\gdo-dcp.ucllnl.org\\pub\\dcp\\archive\\wwcra\\monthly_observed\\riog\\obs.maurer_2002.riog.monthly")
-
-Vars<-c("runoff","swe","smc","et","petwater")
-
+ Vars<-"swe"
+#Vars<-c("runoff","swe","smc","et","petwater")
+CandidaData<-"C:\\Users\\mtalbert\\Downloads\\SWE_monthly_CONUS_12km_1987-2003.nc"
 for(v in 1:length(Vars)){
  Paths<-paste(BasePaths,".",Vars[v],".",sep="")
  for(p in 1:length(Paths)){
@@ -44,7 +44,7 @@ for(v in 1:length(Vars)){
               }          
                RastArray <- ncvar_get(Clim, varid=VarNames, start=c(1,1,m),
                            count=c(length(Lon),length(Lat),1))
-               
+
                #average over space and add to the time series           
                 OutputImg <- OutputImg+RastArray
                nc_close(Clim)
@@ -52,9 +52,26 @@ for(v in 1:length(Vars)){
         MonthlyImages[[m]] <- OutputImg/length(years)
     }
     ImgLst[[p]] <- MonthlyImages  
- }
- 
- 
+ }}
+monthlyChk<-list()
+Clim<-nc_open(CandidaData)
+ for(m in 1:12){
+       for(yr in years){
+       if(yr==years[1]){ #do this for the first year only because it takes a bit to caluclate
+                 Lat <- ncvar_get(Clim,"lat")
+                 Lon <- ncvar_get(Clim,"lon")
+                 Time<-ncvar_get(Clim,"time")
+                 OutputImg <- matrix(data=0,nrow=length(Lon),ncol=length(Lat))
+              }
+       ind<-as.vector(which(as.character(Time)==paste(yr,ifelse(m<10,"0",""),m,sep=""),arr.ind=TRUE))
+         RastArray<-ncvar_get(Clim,varid="swe",start=c(1,1,m),
+                           count=c(length(Lon),length(Lat),1))
+          OutputImg <- OutputImg+RastArray
+                           
+       }
+   monthlyChk[[m]]<-OutputImg
+  }
+nc_close(Clim)
 #The above could be fairly easilly generalized but now I have to get the images to match
 #by figuring out how the coordinates of the smaller fit into the larger 
    p=1
@@ -98,7 +115,7 @@ combineMapLst[[m]]<-combineMap+NAmask
 
 
 for(m in 1:12){
-    Colors<-c(colorRampPalette(c("blue","grey92")(50),rev(colorRampPalette(c("red4","grey92"))(50)))
+    Colors<-c(colorRampPalette(c("blue","grey92")(50),rev(colorRampPalette(c("red4","grey92"))(50))))
 
     #I think this ramp looks like a clown but what do I know...
     #Colors   = c(colorRampPalette(c("darkorchid1","blue","green4","green","palegreen", "grey95"))(50),
@@ -107,6 +124,7 @@ for(m in 1:12){
 #===================================
 #Ratio Here
 #===================================
+    MonthlyRatio<-(ImgLst[[1]][[m]]+2)/(monthlyChk[[m]]+2)
     png(file.path(OutputGraphics,paste(Vars[v],month.abb[m],"VicLogRatio.png",sep="")),width=1000,
                       height=700)
     MonthlyDiff<-log((ImgLst[[1]][[m]]+2)/(combineMapLst[[m]]+2)) #I'm adding the 1 to avoid division by zero as well as
@@ -155,7 +173,7 @@ for(m in 1:12){
                  ylab="Latitude",main=paste(month.name[m],toupper(Vars[v]),"log((CMIP5 VIC + 2)/(CMIP3 VIC + 2))"),
                  cex.lab=2,cex.main=2)
 
-           plot(c(0,1),extendrange(Breaks,f=.15)xaxt="n",yaxt'n",type="n")
+           plot(c(0,1),extendrange(Breaks,f=.15),xaxt="n",yaxt'n",type="n")
               rect(0,min(Breaks),.25,max(Breaks))
               rect(0,Breaks[1:length(Breaks)-1],.25,Breaks[2:length(Breaks)],col=jet.colors(length(Breaks)-1),
                  border=jet.colors(length(Breaks)-1))

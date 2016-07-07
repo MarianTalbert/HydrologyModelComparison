@@ -1,21 +1,32 @@
-
+library(fields)
+library(ncdf4)
+library(raster)
+library(rgdal)
+library(RColorBrewer)
+library(viridis)
+library(wesanderson)
+library(ggplot2)
 #this should run after compareMapsCandidaData which will read in the netCDFs
+
+#this is shiny stack compareMapsCandidaData
+load("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics\\ShinyDatNewNewStacks.RData")
+source("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\HydroCode\\ggplot2pairs.R")
 SnotelPath<-"E:\\ClimateCache\\SnotelData"
 fileList<-list.files(SnotelPath)
 Errored<-grep("ERROR",fileList)
 fileList<-fileList[-c(Errored)]
 SnotelCoords<-read.csv("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\SnotelLocs.csv")
-cols<-wes_palettes$Cavalcanti[c(1,2,4,5)]
+cols<-c(wes_palettes$Cavalcanti[c(1,2,4,5)],wes_palettes$GrandBudapest2[1])
 
 i=1
 
-#pdf("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics\\AllCurves.pdf")
+pdf("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\graphics\\AllCurves.pdf")
 par(mfrow=c(4,4),oma=c(0,1,5,0),mar=c(1,1,1,0))
 #eventually we'll have a for loop here
 count<-0 #count to tell me when to add a legend
-annSums<-as.data.frame(matrix(NA,ncol=5,nrow=length(fileList)))
-MonthlyByStation<-as.data.frame(matrix(NA,ncol=8,nrow=12*length(fileList)))
-names(annSums)<-c("vic407","vic412","satellite","SNOTEL","state")
+annSums<-as.data.frame(matrix(NA,ncol=6,nrow=length(fileList)))
+MonthlyByStation<-as.data.frame(matrix(NA,ncol=9,nrow=12*length(fileList)))
+names(annSums)<-c("vic407","vic412","uw","satellite","SNOTEL","state")
 
 for(i in 1:length(fileList)){
   Split<-strsplit(as.character(SnotelCoords$site_name[i])," ")[[1]]
@@ -36,52 +47,50 @@ for(i in 1:length(fileList)){
       #keeping all the data in the same year range
       #snowDat<-snowDat[snowDat$year>=min(years) & snowDat$year<=max(years),]
       #find that lat and lon
-      lonInd<-which.min(abs(SnotelCoords$lon[i]-countryLon))
-      latInd<-which.min(abs(SnotelCoords$lat[i]-countryLat))
-      v407<-unlist(lapply(vic407,"[",lonInd,latInd))
-      v412<-unlist(lapply(vic412,"[",lonInd,latInd))
+      XYdat<-as.data.frame(cbind(X=SnotelCoords$lon[i],Y=SnotelCoords$lat[i]))
+      v407<-extract(ShinyMapLst[[1]][[4]],XYdat)[1:12]
+      v412<-extract(ShinyMapLst[[1]][[5]],XYdat)[1:12]
+      uw<-extract(ShinyMapLst[[1]][[6]],XYdat)[1:12]
+      satDat<-extract(ShinyMapLst[[1]][[7]],XYdat)[1:12]
 
-      #of course the satelite data is different
-      lonInd<-which.min(abs(SnotelCoords$lon[i]-satLon))
-      latInd<-which.min(abs(SnotelCoords$lat[i]-satLat))
-      satDat<-unlist(lapply(monthlySatellite,"[",lonInd,latInd))
-      annSums[i,c(1,2,3)]<-c(sum(v407),sum(v412),sum(satDat))
+      annSums[i,c(1,2,3,4)]<-c(sum(v407),sum(v412),sum(uw),sum(satDat))
       if(nrow(snowDat)>12){
          meanSWE<-aggregate(snowDat$swe,FUN=mean,list(month=snowDat$month))*25.4
-         annSums[i,4]<-sum(meanSWE)
+         annSums[i,5]<-sum(meanSWE[,2])
       }
-      annSums[i,5]<-substr(SiteName,start=1,stop=2)
-      Ylim<-range(v407,v412,satDat,meanSWE,na.rm=TRUE)
+      annSums[i,6]<-substr(SiteName,start=1,stop=2)
+      Ylim<-range(v407,v412,satDat,meanSWE,uw,na.rm=TRUE)
 
       plot(1:12,v407,type="l",ylim=Ylim,xaxt="n",xlab="",ylab="",lwd=2,bty="l",mgp=c(0,.2,0),main=SiteName,tck=-.01,col=cols[1])
       lines(1:12,v412,col=cols[2],lwd=2)
       lines(1:12,satDat,col=cols[3],lwd=2)
+      lines(1:12,uw,col=cols[4],lwd=2)
       mtext("VIC 4.0.7, 4.1.2, Sattelite and Snotel data \ncompared over 1988-1999",side=3,outer=TRUE,cex=1.5,line=1)
       if(length(meanSWE$x)==12){
-        lines(1:12,meanSWE$x,col=cols[4],lwd=2)
-        MonthlyByStation[((i-1)*12+1:12),4] <- meanSWE$x
+        lines(1:12,meanSWE$x,col=cols[5],lwd=2)
+        MonthlyByStation[((i-1)*12+1:12),5] <- meanSWE$x
       }
-      MonthlyByStation[((i-1)*12+1:12),1:3] <- cbind(v407,v412,satDat)
-      MonthlyByStation[((i-1)*12+1:12),5:8] <- cbind(rep(SiteName,times=12),1:12,
+      MonthlyByStation[((i-1)*12+1:12),1:4] <- cbind(v407,v412,satDat,uw)
+      MonthlyByStation[((i-1)*12+1:12),6:9] <- cbind(rep(SiteName,times=12),1:12,
           rep(SnotelCoords$lon[i],times=12),rep(SnotelCoords$lat[i],times=12))
   }
   if(count==15){
   plot(0:1,0:1,type="n",xlab="",ylab="",xaxt="n",yaxt="n",bty="n")
-  legend("topleft",c("VIC 4.0.7","VIC 4.1.2","Satellite","SNOTEL"),fill=cols,cex=1.5)
+  legend("topleft",c("VIC 4.0.7","VIC 4.1.2","Satellite","Univ Wash","SNOTEL"),fill=cols,cex=1.5)
   count<-0
   }
 }
 
 dev.off()
 
- names(MonthlyByStation)<-c("VIC407","VIC412","Sat",
+ names(MonthlyByStation)<-c("VIC407","VIC412","Sat","UW",
                             "SNOTEL","SiteName","Month","Lon","Lat")
  MonthlyByStation<-na.omit(MonthlyByStation)
-#save(ShinyMapLst,MonthlyByStation,file=file.path(OutputGraphics,"ShinyDatNew.RData"))
+#save(ShinyMapLst,MonthlyByStation,file=file.path(OutputGraphics,"ShinyDatNewStacks.RData"))
 #============================================
 # pairs plot
 d<-annSums[complete.cases(annSums),]
-d[cbind(d[,c(1:4)]>10000,rep(FALSE,times=nrow(d)))]<-10000
+d[cbind(d[,c(1:5)]>10000,rep(FALSE,times=nrow(d)))]<-10000
 d$state<-as.factor(d$state)
 
 pdf(file.path(OutputGraphics,"ParisPlotLinesForStates.pdf"))
@@ -122,7 +131,7 @@ countryElev<-extract(ras,coordgrid)
  }
  #plotting to make sure I've done it right
   DistImg<-matrix(MinDistToSnotel,nrow=length(countryLon))
-  image.plot(DistImg,y=countryLat,x=countryLon)
+  image.plot(DistImg,y=countryLat,x=countryLon,xlim=c(-120,-100),zlim=c(0,10))
   points(x=SnotelCoords$lon,y=SnotelCoords$lat)
   
 #I really thought there was a relationship here but maybe not...

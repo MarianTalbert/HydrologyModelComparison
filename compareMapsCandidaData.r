@@ -6,6 +6,7 @@ library(RColorBrewer)
 library(viridis)
 library(wesanderson)
 library(ggplot2)
+
 source("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\HydroCode\\myImagePlot.r")
 source("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\HydroCode\\my.filled.contour.r")
 source("C:\\Users\\mtalbert\\Desktop\\HydrologyProblem\\HydroCode\\convertToRaster.r")
@@ -139,6 +140,7 @@ for(v in 1:length(Vars)){
               monthlySatellite[[m]]<-monthlySatellite[[m]]+NAmask
           }
         nc_close(Clim)
+        Satellite<-stack(lapply(monthlySatellite,FUN=convertToRaster,Lon=satLon,Lat=satLat))
     }
     #==============================================
     #       vic412 was the CMIP5 model output
