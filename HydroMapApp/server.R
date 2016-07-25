@@ -13,7 +13,7 @@ shinyServer(function(input, output,session) {
   observeEvent(input$Map_click,
                {XYs$clickedMarkerOrMap <- "Map"})
   
-  output$myChart<-renderChart2({
+  output$myChart<-renderChart({
   
   if(XYs$clickedMarkerOrMap=="Map"){
     #I think I need the actual VIC 4.0.7 and VIC 4.1.2 data here
@@ -141,12 +141,13 @@ shinyServer(function(input, output,session) {
      Lon<-as.numeric((MonthlyByStation$Lon[MonthlyByStation$SiteName==id])[1])
      Lat<-as.numeric((MonthlyByStation$Lat[MonthlyByStation$SiteName==id])[1])
      ind<-which((latitude==Lat & longitude==Lon),arr.ind=TRUE) 
-     col<-"black"
-     rad<-1
-     Alph<-.3
+     col<-rep("black",times=length(longitude))
+     rad<-rep(1,times=length(longitude))
+     Alph<-rep(.3,times=length(longitude))
+     ids<-as.character(seq(1:length(latitude)))     
+      if(input$mapVar!="swe")  Alph<-rep(0,times=length(longitude))
+    
      
-     if(input$mapVar!="swe") Alph = 0
-     browser()
      proxy%>%addCircleMarkers(lat = XYs$Lat, lng = XYs$Lon, radius = rad, 
                               color=col,layerId=ids,opacity=Alph,fillOpacity = Alph)
    

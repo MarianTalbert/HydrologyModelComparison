@@ -26,7 +26,7 @@ ui = navbarPage("VIC Model Comparison",
                "When viewing SWE you can optionally add curves from other data sources",
                "by checking the box."),
       leafletOutput('Map'),
-      showOutput("myChart", "nvd3"),
+      #showOutput("myChart", "nvd3"),
       width=10
     )
    
