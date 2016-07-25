@@ -101,7 +101,7 @@ shinyServer(function(input, output,session) {
     redCols<-rev(c(colorRampPalette(c("red4","grey96"))(10),"grey96"))
     palblue <- colorBin(blueCols,domain=c(exp(0),exp(1.2)))
     palred <- colorBin(redCols,domain=c(exp(0),exp(1.2)))
-    MyMap<-leaflet() %>% addTiles()%>%
+    MyMap<-leaflet() %>% addTiles()%>%setView(-100,42,zoom=4) %>%
       addProviderTiles("CartoDB.Positron") %>%
       addLegend(pal = palblue,values=c(exp(0),exp(1.2)),
                 title="VIC 4.0.7/VIC 4.1.2") %>%
@@ -130,7 +130,7 @@ shinyServer(function(input, output,session) {
    proxy %>%
      addRasterImage(dataset[[RcpChoice]][[TimePeriod]],
                     colors = pal, 
-                    opacity = input$mapTrans)
+                    opacity = .8)
  })
 
  observe({
@@ -141,12 +141,12 @@ shinyServer(function(input, output,session) {
      Lon<-as.numeric((MonthlyByStation$Lon[MonthlyByStation$SiteName==id])[1])
      Lat<-as.numeric((MonthlyByStation$Lat[MonthlyByStation$SiteName==id])[1])
      ind<-which((latitude==Lat & longitude==Lon),arr.ind=TRUE) 
-     col<-rep("black",times=length(longitude))
-     rad<-rep(1,times=length(longitude))
-     Alph<-rep(.3,times=length(longitude))
+     col<-"black"
+     rad<-1
+     Alph<-.3
      
-     if(input$mapVar!="swe")  Alph<-rep(0,times=length(longitude))
-     
+     if(input$mapVar!="swe") Alph = 0
+     browser()
      proxy%>%addCircleMarkers(lat = XYs$Lat, lng = XYs$Lon, radius = rad, 
                               color=col,layerId=ids,opacity=Alph,fillOpacity = Alph)
    

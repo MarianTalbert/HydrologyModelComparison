@@ -14,6 +14,18 @@ ids<-MonthlyByStation$SiteName[MonthlyByStation$Month==1]
 
 runApp("HydroMapApp")
 
+
+MyMap<-leaflet() %>% addTiles()%>%setView(-100,42,zoom=4) %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  addLegend(pal = palblue,values=c(exp(0),exp(1.2)),
+            title="VIC 4.0.7/VIC 4.1.2") %>%
+  addLegend(pal = palred, values = c(exp(0),exp(1.2)),
+            title="VIC 4.1.2/VIC 4.0.7")%>%
+  addRasterImage(ShinyMapLst[[1]][[1]][[1]],
+                 colors = pal, 
+                 opacity = .8)
+
+
 runApp("ClickOnPoints")
 blueCols<-rev(c(colorRampPalette(c("blue","grey96"))(10),
           "grey96"))
@@ -23,7 +35,8 @@ pal = colorNumeric(Colors,domain=c(-1.2,1.2),
                    na.color = "transparent")
 palblue <- colorBin(blueCols,domain=c(exp(0),exp(1.2)))
 palred <- colorBin(redCols,domain=c(exp(0),exp(1.2)))
-leaflet() %>% addTiles() %>%  addRasterImage(ShinyMapLst[[1]][[13]][[1]],
+leaflet() %>% addTiles() %>% setView(-71,42,zoom=2)
+addRasterImage(ShinyMapLst[[1]][[1]][[1]],
                                                     colors = pal, 
                                                     opacity = .9) %>%
   addLegend(pal = palblue,values=c(exp(0),exp(1.2)),

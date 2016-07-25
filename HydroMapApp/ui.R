@@ -16,21 +16,29 @@ ui = navbarPage("VIC Model Comparison",
                                   June=6,July=7,August=8,September=9,
                                   October=10,November=11,December=12),
                      selected=13),
-        sliderInput("mapTrans","Transparency", 0, 1,.8),
         checkboxInput("showSS", label = "Show SNOTEL and Satellite data", 
                       value = FALSE),
       width=2
     ),
     mainPanel(
+      helpText("Monthly VIC model ratios will be plotted in the lower panel",
+               "if you click on any point on the map.",
+               "When viewing SWE you can optionally add curves from other data sources",
+               "by checking the box."),
       leafletOutput('Map'),
-      showOutput("myChart", "nvd3")
+      showOutput("myChart", "nvd3"),
+      width=10
     )
    
   )
 ),
-tabPanel("Explanation",
+tabPanel("Background Information",
          mainPanel(
-           includeHTML("include.html")
+           includeHTML("include.html"),
+           img(src="PairsPlotLinesForStates.png",height=600,width=600),
+           img(src="ErrorByElevandLat.png",height=400,width=600),
+           img(src="ErrorByDistanceToSnotelandLat.png",height=400,width=600)
+           
          )
          )
   )

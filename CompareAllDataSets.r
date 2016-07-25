@@ -55,6 +55,8 @@ for(i in 1:length(fileList)){
 
       annSums[i,c(1,2,3,4)]<-c(sum(v407),sum(v412),sum(uw),sum(satDat))
       if(nrow(snowDat)>12){
+        #Take the mean over the available years for snotel and then caculate the annual mean
+        #converting units
          meanSWE<-aggregate(snowDat$swe,FUN=mean,list(month=snowDat$month))*25.4
          annSums[i,5]<-sum(meanSWE[,2])
       }
@@ -89,7 +91,8 @@ dev.off()
 #save(ShinyMapLst,MonthlyByStation,file=file.path(OutputGraphics,"ShinyDatNewStacks.RData"))
 #============================================
 # pairs plot
-d<-annSums[complete.cases(annSums),]
+#a couple of the modeled have extremely high values 
+d<-annSums
 d[cbind(d[,c(1:5)]>10000,rep(FALSE,times=nrow(d)))]<-10000
 d$state<-as.factor(d$state)
 
@@ -135,12 +138,16 @@ countryElev<-extract(ras,coordgrid)
   points(x=SnotelCoords$lon,y=SnotelCoords$lat)
   
 #I really thought there was a relationship here but maybe not...
-
-    AnnualSum<-as.vector(log((Reduce("+",vic412)+25)/(Reduce("+",vic407)+25)))
+  vic412SWE<-extract(ShinyMapLst[[1]][[5]][[13]],coordgrid)
+  vic407SWE<-extract(ShinyMapLst[[1]][[4]][[13]],coordgrid)
+  
+  vic412SWEfeb<-extract(ShinyMapLst[[1]][[5]][[2]],coordgrid)
+  vic407SWEfeb<-extract(ShinyMapLst[[1]][[4]][[2]],coordgrid)
+    AnnualSum<-as.vector(log((vic412SWE+25)/(vic407SWE+25)))
     
     #Febuary was the worst month so use that
-    MonthlyImg<-log((vic412[[2]]+10)/(vic407[[2]]+10))
-    MonthlyDiff<-as.vector(log((vic412[[2]]+10)/(vic407[[2]]+10)))
+    MonthlyImg<-log((vic412SWEfeb+10)/(vic407SWEfeb+10))
+    MonthlyDiff<-as.vector(log((vic412SWEfeb+10)/(vic407SWEfeb+10)))
 
      ErrorByElev<-data.frame(Elev=countryElev,FebError=MonthlyDiff,AnnualError=AnnualSum,
        AbsAnnError=abs(AnnualSum),absFebError=abs(MonthlyDiff),Lon=coordgrid[,1],Lat=coordgrid[,2],DistToSnotel=MinDistToSnotel)
@@ -152,7 +159,7 @@ countryElev<-extract(ras,coordgrid)
           image.plot(DistImg,y=countryLat,x=countryLon)
           Sys.sleep(4)
       }
-      ErrorByElev<-ErrorByElev[as.vector(vic412[[2]])!=0,]
+      ErrorByElev<-ErrorByElev[vic412SWE!=0 & vic407SWE!=0,]
      ErrorByElev<-ErrorByElev[complete.cases(ErrorByElev),]
 
      ggpairs(dat=ErrorByElev,alph=.01,pointSize=.1,DevScore=1,showResp=FALSE)
