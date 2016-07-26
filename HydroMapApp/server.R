@@ -48,8 +48,9 @@ shinyServer(function(input, output,session) {
   }  else{
     id<-input$Map_marker_click$id
     if(input$mapVar!="swe") id<-NULL
+   
     Dat<-MonthlyByStation[MonthlyByStation$SiteName==id,]
-   # browser()
+   
     if(input$showSS){
         Dat2Use<-data.frame(Response=as.vector(c(Dat$VIC407,Dat$VIC412,Dat$Sat,Dat$SNOTEL,Dat$UW)),
                             Month=as.numeric(rep(Dat$Month,times=ifelse(is.null(id),0,5))),
@@ -143,14 +144,14 @@ shinyServer(function(input, output,session) {
      Lat<-as.numeric((MonthlyByStation$Lat[MonthlyByStation$SiteName==id])[1])
      ind<-which((latitude==Lat & longitude==Lon),arr.ind=TRUE) 
      col<-rep("black",times=length(longitude))
-     rad<-rep(2,times=length(longitude))
+     rad<-rep(3,times=length(longitude))
      Alph<-rep(.3,times=length(longitude))
-     ids<-as.character(seq(1:length(latitude)))     
+     #ids<-as.character(seq(1:length(latitude)))     
       if(input$mapVar!="swe")  Alph<-rep(0,times=length(longitude))
     
      
      proxy%>%addCircleMarkers(lat = XYs$Lat, lng = XYs$Lon, radius = rad, 
-                              color=col,layerId=station,opacity=Alph,fillOpacity = Alph)
+                              color=col,layerId=ids,opacity=Alph,fillOpacity = Alph)
    
  })
 
@@ -165,7 +166,7 @@ shinyServer(function(input, output,session) {
      proxy<-leafletProxy("Map")
      proxy%>%addCircleMarkers(lat=input$Map_marker_click$lat,
                               lng=input$Map_marker_click$lng,col="red",
-                              radius=3,opacity=1,layerId="2")
+                              radius=4,opacity=1,layerId="2")
      }
    }
  })
