@@ -25,14 +25,14 @@ par(mfrow=c(4,4),oma=c(0,1,5,0),mar=c(1,1,1,0))
 #eventually we'll have a for loop here
 count<-0 #count to tell me when to add a legend
 annSums<-as.data.frame(matrix(NA,ncol=6,nrow=length(fileList)))
-MonthlyByStation<-as.data.frame(matrix(NA,ncol=9,nrow=12*length(fileList)))
+MonthlyByStation<-as.data.frame(matrix(NA,ncol=10,nrow=12*length(fileList)))
 names(annSums)<-c("vic407","vic412","uw","satellite","SNOTEL","state")
 
 for(i in 1:length(fileList)){
   Split<-strsplit(as.character(SnotelCoords$site_name[i])," ")[[1]]
   siteNumber<-Split[length(Split)]
   siteNumber<-substr(siteNumber,start=2,stop=(nchar(siteNumber)-1))
-
+  prettyName<-paste(SnotelCoords$site_name[i] ,SnotelCoords$state[i])
   SiteName<-paste(SnotelCoords$state[i],siteNumber,sep="_")
 
   fileToUse<-match(SiteName,gsub(".csv","",fileList))
@@ -73,8 +73,8 @@ for(i in 1:length(fileList)){
         MonthlyByStation[((i-1)*12+1:12),5] <- meanSWE$x
       }
       MonthlyByStation[((i-1)*12+1:12),1:4] <- cbind(v407,v412,satDat,uw)
-      MonthlyByStation[((i-1)*12+1:12),6:9] <- cbind(rep(SiteName,times=12),1:12,
-          rep(SnotelCoords$lon[i],times=12),rep(SnotelCoords$lat[i],times=12))
+      MonthlyByStation[((i-1)*12+1:12),6:10] <- cbind(rep(SiteName,times=12),1:12,
+          rep(SnotelCoords$lon[i],times=12),rep(SnotelCoords$lat[i],times=12),rep(prettyName,times=12))
   }
   if(count==15){
   plot(0:1,0:1,type="n",xlab="",ylab="",xaxt="n",yaxt="n",bty="n")
@@ -86,9 +86,9 @@ for(i in 1:length(fileList)){
 dev.off()
 
  names(MonthlyByStation)<-c("VIC407","VIC412","Sat","UW",
-                            "SNOTEL","SiteName","Month","Lon","Lat")
+                            "SNOTEL","SiteName","Month","Lon","Lat",prettyName)
  MonthlyByStation<-na.omit(MonthlyByStation)
-#save(ShinyMapLst,MonthlyByStation,file=file.path(OutputGraphics,"ShinyDatNewStacks.RData"))
+save(ShinyMapLst,MonthlyByStation,file=file.path(OutputGraphics,"ShinyDatStacksPrettyNames.RData"))
 #============================================
 # pairs plot
 #a couple of the modeled have extremely high values 

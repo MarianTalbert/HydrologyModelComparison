@@ -41,7 +41,7 @@ shinyServer(function(input, output,session) {
       
       myPlot<-nPlot(Response~Month,data=Dat2Use,group="Model",
                     type = "lineChart")
-      myPlot$yAxis(axisLabel="Snow Water Equivilant")
+      myPlot$yAxis(axisLabel="")
       myPlot$chart(margin = list(left = 100))
       myPlot$xAxis(axisLabel="Month")
       return(myPlot)
@@ -62,16 +62,32 @@ shinyServer(function(input, output,session) {
                             Model=as.character(rep(c("VIC407","VIC412"),
                                                    each=ifelse(is.null(id),0,12))))
     }
+    
     myPlot<-nPlot(Response~Month,data=Dat2Use,group="Model",
                   type = "lineChart")
-    myPlot$yAxis(axisLabel=paste("Snow Water Equivilant",id))
+    myPlot$yAxis(axisLabel="")
     myPlot$chart(margin = list(left = 100))
     myPlot$xAxis(axisLabel="Month")
     return(myPlot)      
   }                
  
   })
- 
+  output$Lab<-renderText({
+    if(XYs$clickedMarkerOrMap=="Map"){ 
+      l<-switch(input$mapVar,
+             "swe"="Snow Water Equivalent",
+             "runoff"="Runoff",
+             "smc"="Soil Moisture Content")
+      
+      return(paste0(l," for Latitude ",round(input$Map_click$lat,digits=4),
+                    " and Longitude ", round(input$Map_click$lng,digits=4)))
+    }
+    id<-input$Map_marker_click$id
+    if(is.null(id)) return("")
+    Label<-MonthlyByStation[MonthlyByStation$SiteName==id,10]
+    return(paste("Snow Water Equivalent for", Label[1]))
+    
+  })
  
   #======================================	
   # create the map
@@ -91,7 +107,7 @@ shinyServer(function(input, output,session) {
   
   MapLab=reactive({
     switch(input$mapVar,
-           swe = "Snow Water Equivilant",
+           swe = "Snow Water Equivalent",
            runoff = "Runoff",
            smc ="Soil Moisture Content",
            et ="Evapotranspiration Actual")})
