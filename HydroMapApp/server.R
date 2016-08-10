@@ -85,7 +85,9 @@ shinyServer(function(input, output,session) {
     id<-input$Map_marker_click$id
     if(is.null(id)) return("")
     Label<-MonthlyByStation[MonthlyByStation$SiteName==id,10]
-    return(paste("Snow Water Equivalent for", Label[1]))
+    return(paste("Snow Water Equivalent for", Label[1],
+                 "(Latitude",round(input$Map_marker_click$lat,digits=4),
+                 ", Longitude",round(input$Map_marker_click$lng,digits=4),")"))
     
   })
  
@@ -167,7 +169,8 @@ shinyServer(function(input, output,session) {
     
      
      proxy%>%addCircleMarkers(lat = XYs$Lat, lng = XYs$Lon, radius = rad, 
-                              color=col,layerId=ids,opacity=Alph,fillOpacity = Alph)
+                              color=col,layerId=ids,opacity=Alph,fillOpacity = Alph,
+                              )
    
  })
 
@@ -175,14 +178,16 @@ shinyServer(function(input, output,session) {
    if(XYs$clickedMarkerOrMap=="Map"){
      proxy<-leafletProxy("Map")
      proxy%>%addCircleMarkers(lat=input$Map_click$lat,lng=input$Map_click$lng,col="red",
-                        radius=3,opacity=1,layerId="2")
+                        radius=3,opacity=1,layerId="2"
+                        )
    }
    if(XYs$clickedMarkerOrMap=="Marker"){
      if(!is.null(input$Map_marker_click)){
      proxy<-leafletProxy("Map")
      proxy%>%addCircleMarkers(lat=input$Map_marker_click$lat,
                               lng=input$Map_marker_click$lng,col="red",
-                              radius=4,opacity=1,layerId="2")
+                              radius=4,opacity=1,layerId="2"
+                              )
      }
    }
  })
